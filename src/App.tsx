@@ -149,6 +149,7 @@ function App() {
 
       <Toolbar
         mode={mode}
+        zoom={zoom}
         onImportClick={handleImportClick}
         onClearImported={() => {
           setImportedIndexes(new Set());
@@ -165,8 +166,8 @@ function App() {
           setMode((current) => (current === "grid" ? "heatmap" : "grid"));
           addLog("info", `Toggle Grid / Heatmap Mode.`);
         }}
-        onZoomIn={() => setZoom((current) => Math.min(8, Number((current + 0.4).toFixed(2))))}
-        onZoomOut={() => setZoom((current) => Math.max(0.8, Number((current - 0.4).toFixed(2))))}
+        onZoomIn={() => setZoom((current) => Math.min(10, Number((current * 1.22).toFixed(2))))}
+        onZoomOut={() => setZoom((current) => Math.max(0.55, Number((current / 1.22).toFixed(2))))}
       />
 
       <div className="workspace">
@@ -178,6 +179,7 @@ function App() {
             focusIndex={focusIndex}
             mode={mode}
             zoom={zoom}
+            onZoomChange={setZoom}
             onSelect={handleSelect}
           />
         </section>

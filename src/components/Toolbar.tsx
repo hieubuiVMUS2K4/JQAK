@@ -14,6 +14,7 @@ import type { GridMode } from "../types";
 
 type ToolbarProps = {
   mode: GridMode;
+  zoom: number;
   onImportClick: () => void;
   onClearImported: () => void;
   onClearSelected: () => void;
@@ -27,6 +28,7 @@ type ToolbarProps = {
 
 export function Toolbar({
   mode,
+  zoom,
   onImportClick,
   onClearImported,
   onClearSelected,
@@ -75,6 +77,9 @@ export function Toolbar({
         <Crosshair size={16} />
         Zoom Out
       </button>
+      <span className="zoom-readout" title="Current grid zoom">
+        {Math.round(zoom * 100)}%
+      </span>
     </div>
   );
 }

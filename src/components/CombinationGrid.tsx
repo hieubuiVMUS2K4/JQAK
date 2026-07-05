@@ -1,4 +1,4 @@
-import { MouseEvent, PointerEvent, WheelEvent, useEffect, useMemo, useRef } from "react";
+import { MouseEvent, PointerEvent, useEffect, useMemo, useRef } from "react";
 import type { GridMode } from "../types";
 import { formatCombination, indexToCombination, TOTAL_COMBINATIONS } from "../utils/combinations";
 
@@ -14,6 +14,7 @@ type CombinationGridProps = {
   focusIndex: number | null;
   mode: GridMode;
   zoom: number;
+  onZoomChange: (zoom: number) => void;
   onSelect: (index: number) => void;
 };
 
@@ -45,6 +46,7 @@ export function CombinationGrid({
   focusIndex,
   mode,
   zoom,
+  onZoomChange,
   onSelect,
 }: CombinationGridProps) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
@@ -53,6 +55,8 @@ export function CombinationGrid({
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const frameRef = useRef(0);
   const rectRef = useRef<DOMRect | null>(null);
+  const previousStrideRef = useRef(BASE_CELL_SIZE * zoom + GAP);
+  const zoomAnchorRef = useRef<{ xRatio: number; yRatio: number; viewportX: number; viewportY: number } | null>(null);
   const dragRef = useRef<{ x: number; y: number; left: number; top: number; active: boolean } | null>(null);
   const drawStateRef = useRef<DrawState>({
     importedIndexes,
@@ -177,7 +181,43 @@ export function CombinationGrid({
     frameRef.current = requestAnimationFrame(draw);
   }
 
+  function clampZoom(value: number) {
+    return Math.min(10, Math.max(0.55, Number(value.toFixed(2))));
+  }
+
+  function setZoomAroundViewportPoint(nextZoom: number, viewportX: number, viewportY: number) {
+    const scroller = scrollerRef.current;
+    if (!scroller) {
+      onZoomChange(clampZoom(nextZoom));
+      return;
+    }
+
+    zoomAnchorRef.current = {
+      xRatio: (scroller.scrollLeft + viewportX) / stride,
+      yRatio: (scroller.scrollTop + viewportY) / stride,
+      viewportX,
+      viewportY,
+    };
+    onZoomChange(clampZoom(nextZoom));
+  }
+
   useEffect(() => {
+    const scroller = scrollerRef.current;
+    if (scroller && previousStrideRef.current !== stride) {
+      const anchor =
+        zoomAnchorRef.current ?? {
+          xRatio: (scroller.scrollLeft + scroller.clientWidth / 2) / previousStrideRef.current,
+          yRatio: (scroller.scrollTop + scroller.clientHeight / 2) / previousStrideRef.current,
+          viewportX: scroller.clientWidth / 2,
+          viewportY: scroller.clientHeight / 2,
+        };
+
+      scroller.scrollLeft = Math.max(0, anchor.xRatio * stride - anchor.viewportX);
+      scroller.scrollTop = Math.max(0, anchor.yRatio * stride - anchor.viewportY);
+      previousStrideRef.current = stride;
+      zoomAnchorRef.current = null;
+    }
+
     drawStateRef.current = {
       ...drawStateRef.current,
       importedIndexes,
@@ -305,13 +345,29 @@ export function CombinationGrid({
     scheduleDraw();
   }
 
-  function handleWheel(event: WheelEvent<HTMLCanvasElement>) {
+  function handleWheelEvent(event: WheelEvent) {
     const scroller = scrollerRef.current;
     if (!scroller) return;
     event.preventDefault();
+
+    if (event.ctrlKey || event.metaKey) {
+      const rect = rectRef.current ?? wrapperRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const zoomFactor = event.deltaY < 0 ? 1.18 : 1 / 1.18;
+      setZoomAroundViewportPoint(zoom * zoomFactor, event.clientX - rect.left, event.clientY - rect.top);
+      return;
+    }
+
     scroller.scrollLeft += event.shiftKey ? event.deltaY : event.deltaX;
     scroller.scrollTop += event.shiftKey ? event.deltaX : event.deltaY;
   }
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    canvas.addEventListener("wheel", handleWheelEvent, { passive: false });
+    return () => canvas.removeEventListener("wheel", handleWheelEvent);
+  }, [zoom, stride]);
 
   function handlePointerDrag(event: PointerEvent<HTMLCanvasElement>) {
     if (dragRef.current) {
@@ -333,7 +389,6 @@ export function CombinationGrid({
         onPointerMove={handlePointerDrag}
         onPointerUp={handlePointerUp}
         onPointerLeave={handlePointerLeave}
-        onWheel={handleWheel}
       />
       <div ref={tooltipRef} className="tooltip" hidden />
     </div>

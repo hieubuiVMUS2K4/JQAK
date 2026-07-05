@@ -122,12 +122,27 @@ h2 {
 .toolbar {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 6px;
   border: 1px solid #252c35;
   border-radius: 8px;
   background: #0f1216;
   padding: 8px;
   flex: 0 0 auto;
+}
+
+.zoom-readout {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 54px;
+  min-height: 32px;
+  border: 1px solid #2f3742;
+  border-radius: 7px;
+  background: #151a20;
+  color: #cbd5e1;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
 }
 
 .workspace {
