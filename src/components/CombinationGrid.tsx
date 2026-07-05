@@ -1,4 +1,4 @@
-import { MouseEvent, PointerEvent, WheelEvent, useEffect, useMemo, useRef, useState } from "react";
+import { MouseEvent, PointerEvent, WheelEvent, useEffect, useMemo, useRef } from "react";
 import type { GridMode } from "../types";
 import { formatCombination, indexToCombination, TOTAL_COMBINATIONS } from "../utils/combinations";
 
@@ -17,18 +17,25 @@ type CombinationGridProps = {
   onSelect: (index: number) => void;
 };
 
-type TooltipState = {
-  x: number;
-  y: number;
-  index: number;
-  numbers: number[];
+type DrawState = {
+  importedIndexes: Set<number>;
+  selectedIndexes: Set<number>;
+  importedList: number[];
+  selectedList: number[];
+  randomIndex: number | null;
+  mode: GridMode;
+  cellSize: number;
+  stride: number;
+  width: number;
+  height: number;
+  dpr: number;
+  hoverIndex: number | null;
 };
 
-function colorForIndex(index: number, imported: Set<number>, selected: Set<number>, randomIndex: number | null, mode: GridMode) {
-  if (randomIndex === index) return "#f7c948";
-  if (selected.has(index)) return "#27a7ff";
-  if (imported.has(index)) return mode === "heatmap" ? "#ff6b5f" : "#ee3f46";
-  return mode === "heatmap" ? "#303338" : "#2b2b2b";
+function isIndexVisible(index: number, startColumn: number, endColumn: number, startRow: number, endRow: number) {
+  const column = index % COLUMNS;
+  const row = Math.floor(index / COLUMNS);
+  return column >= startColumn && column <= endColumn && row >= startRow && row <= endRow;
 }
 
 export function CombinationGrid({
@@ -43,14 +50,181 @@ export function CombinationGrid({
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const scrollerRef = useRef<HTMLDivElement | null>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const tooltipRef = useRef<HTMLDivElement | null>(null);
+  const frameRef = useRef(0);
+  const rectRef = useRef<DOMRect | null>(null);
   const dragRef = useRef<{ x: number; y: number; left: number; top: number; active: boolean } | null>(null);
-  const [tooltip, setTooltip] = useState<TooltipState | null>(null);
+  const drawStateRef = useRef<DrawState>({
+    importedIndexes,
+    selectedIndexes,
+    importedList: [],
+    selectedList: [],
+    randomIndex,
+    mode,
+    cellSize: BASE_CELL_SIZE * zoom,
+    stride: BASE_CELL_SIZE * zoom + GAP,
+    width: 0,
+    height: 0,
+    dpr: window.devicePixelRatio || 1,
+    hoverIndex: null,
+  });
+
   const cellSize = BASE_CELL_SIZE * zoom;
   const stride = cellSize + GAP;
   const worldWidth = COLUMNS * stride;
   const worldHeight = ROWS * stride;
+  const importedList = useMemo(() => [...importedIndexes], [importedIndexes]);
+  const selectedList = useMemo(() => [...selectedIndexes], [selectedIndexes]);
 
-  const sortedImported = useMemo(() => [...importedIndexes], [importedIndexes]);
+  function drawVisibleIndexes(
+    ctx: CanvasRenderingContext2D,
+    indexes: number[],
+    color: string,
+    startColumn: number,
+    endColumn: number,
+    startRow: number,
+    endRow: number,
+    state: DrawState,
+    scroller: HTMLDivElement,
+  ) {
+    ctx.fillStyle = color;
+    const size = Math.max(1, state.cellSize);
+    for (const index of indexes) {
+      if (!isIndexVisible(index, startColumn, endColumn, startRow, endRow)) continue;
+      const column = index % COLUMNS;
+      const row = Math.floor(index / COLUMNS);
+      ctx.fillRect(column * state.stride - scroller.scrollLeft, row * state.stride - scroller.scrollTop, size, size);
+    }
+  }
+
+  function draw() {
+    const canvas = canvasRef.current;
+    const scroller = scrollerRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !scroller || !ctx) return;
+
+    const state = drawStateRef.current;
+    const width = state.width;
+    const height = state.height;
+    if (width === 0 || height === 0) return;
+
+    ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "#121417";
+    ctx.fillRect(0, 0, width, height);
+
+    const startColumn = Math.max(0, Math.floor(scroller.scrollLeft / state.stride));
+    const endColumn = Math.min(COLUMNS - 1, Math.ceil((scroller.scrollLeft + width) / state.stride));
+    const startRow = Math.max(0, Math.floor(scroller.scrollTop / state.stride));
+    const endRow = Math.min(ROWS - 1, Math.ceil((scroller.scrollTop + height) / state.stride));
+    const visibleWidth = endColumn - startColumn + 1;
+    const visibleHeight = endRow - startRow + 1;
+    const defaultColor = state.mode === "heatmap" ? "#303338" : "#2b2b2b";
+
+    ctx.fillStyle = defaultColor;
+    const size = Math.max(1, state.cellSize);
+    for (let row = 0; row < visibleHeight; row += 1) {
+      const sourceRow = startRow + row;
+      const y = sourceRow * state.stride - scroller.scrollTop;
+      for (let column = 0; column < visibleWidth; column += 1) {
+        const sourceColumn = startColumn + column;
+        const index = sourceRow * COLUMNS + sourceColumn;
+        if (index >= TOTAL_COMBINATIONS) break;
+        ctx.fillRect(sourceColumn * state.stride - scroller.scrollLeft, y, size, size);
+      }
+    }
+
+    drawVisibleIndexes(
+      ctx,
+      state.importedList,
+      state.mode === "heatmap" ? "#ff6b5f" : "#ee3f46",
+      startColumn,
+      endColumn,
+      startRow,
+      endRow,
+      state,
+      scroller,
+    );
+    drawVisibleIndexes(ctx, state.selectedList, "#27a7ff", startColumn, endColumn, startRow, endRow, state, scroller);
+    if (state.randomIndex !== null) {
+      drawVisibleIndexes(ctx, [state.randomIndex], "#f7c948", startColumn, endColumn, startRow, endRow, state, scroller);
+    }
+
+    if (state.cellSize >= 22) {
+      ctx.fillStyle = "#d8dde6";
+      ctx.font = "10px Inter, system-ui, sans-serif";
+      for (let row = startRow; row <= endRow; row += 1) {
+        const y = row * state.stride - scroller.scrollTop;
+        for (let column = startColumn; column <= endColumn; column += 1) {
+          const index = row * COLUMNS + column;
+          if (index >= TOTAL_COMBINATIONS) break;
+          ctx.fillText(formatCombination(indexToCombination(index)), column * state.stride - scroller.scrollLeft + 3, y + 14);
+        }
+      }
+    }
+
+    if (state.hoverIndex !== null && isIndexVisible(state.hoverIndex, startColumn, endColumn, startRow, endRow)) {
+      const column = state.hoverIndex % COLUMNS;
+      const row = Math.floor(state.hoverIndex / COLUMNS);
+      ctx.strokeStyle = "#ffffff";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(column * state.stride - scroller.scrollLeft - 1, row * state.stride - scroller.scrollTop - 1, state.cellSize + 2, state.cellSize + 2);
+    }
+  }
+
+  function scheduleDraw() {
+    cancelAnimationFrame(frameRef.current);
+    frameRef.current = requestAnimationFrame(draw);
+  }
+
+  useEffect(() => {
+    drawStateRef.current = {
+      ...drawStateRef.current,
+      importedIndexes,
+      selectedIndexes,
+      importedList,
+      selectedList,
+      randomIndex,
+      mode,
+      cellSize,
+      stride,
+    };
+    scheduleDraw();
+  }, [cellSize, importedIndexes, importedList, mode, randomIndex, selectedIndexes, selectedList, stride]);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const scroller = scrollerRef.current;
+    const wrapper = wrapperRef.current;
+    if (!canvas || !scroller || !wrapper) return;
+    const activeCanvas = canvas;
+    const activeWrapper = wrapper;
+
+    function resizeCanvas() {
+      const rect = activeWrapper.getBoundingClientRect();
+      const dpr = window.devicePixelRatio || 1;
+      rectRef.current = rect;
+      drawStateRef.current.width = rect.width;
+      drawStateRef.current.height = rect.height;
+      drawStateRef.current.dpr = dpr;
+      activeCanvas.width = Math.floor(rect.width * dpr);
+      activeCanvas.height = Math.floor(rect.height * dpr);
+      activeCanvas.style.width = `${rect.width}px`;
+      activeCanvas.style.height = `${rect.height}px`;
+      scheduleDraw();
+    }
+
+    const resizeObserver = new ResizeObserver(resizeCanvas);
+    resizeObserver.observe(activeWrapper);
+    scroller.addEventListener("scroll", scheduleDraw, { passive: true });
+    resizeCanvas();
+
+    return () => {
+      cancelAnimationFrame(frameRef.current);
+      resizeObserver.disconnect();
+      scroller.removeEventListener("scroll", scheduleDraw);
+    };
+  }, []);
 
   useEffect(() => {
     const scroller = scrollerRef.current;
@@ -64,91 +238,10 @@ export function CombinationGrid({
     });
   }, [focusIndex, stride]);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const scroller = scrollerRef.current;
-    const wrapper = wrapperRef.current;
-    if (!canvas || !scroller || !wrapper) return;
-
-    let frame = 0;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    const draw = () => {
-      const rect = wrapper.getBoundingClientRect();
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = Math.floor(rect.width * dpr);
-      canvas.height = Math.floor(rect.height * dpr);
-      canvas.style.width = `${rect.width}px`;
-      canvas.style.height = `${rect.height}px`;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, rect.width, rect.height);
-      ctx.fillStyle = "#121417";
-      ctx.fillRect(0, 0, rect.width, rect.height);
-
-      const startColumn = Math.max(0, Math.floor(scroller.scrollLeft / stride));
-      const endColumn = Math.min(COLUMNS - 1, Math.ceil((scroller.scrollLeft + rect.width) / stride));
-      const startRow = Math.max(0, Math.floor(scroller.scrollTop / stride));
-      const endRow = Math.min(ROWS - 1, Math.ceil((scroller.scrollTop + rect.height) / stride));
-
-      for (let row = startRow; row <= endRow; row += 1) {
-        const y = row * stride - scroller.scrollTop;
-        for (let column = startColumn; column <= endColumn; column += 1) {
-          const index = row * COLUMNS + column;
-          if (index >= TOTAL_COMBINATIONS) break;
-          const x = column * stride - scroller.scrollLeft;
-          ctx.fillStyle = colorForIndex(index, importedIndexes, selectedIndexes, randomIndex, mode);
-          ctx.fillRect(x, y, Math.max(1, cellSize), Math.max(1, cellSize));
-
-          if (cellSize >= 22) {
-            ctx.fillStyle = "#d8dde6";
-            ctx.font = "10px Inter, system-ui, sans-serif";
-            ctx.fillText(formatCombination(indexToCombination(index)), x + 3, y + 14);
-          }
-        }
-      }
-
-      if (mode === "heatmap" && cellSize < 8) {
-        ctx.fillStyle = "rgba(238, 63, 70, 0.9)";
-        for (const index of sortedImported) {
-          const column = index % COLUMNS;
-          const row = Math.floor(index / COLUMNS);
-          if (column < startColumn || column > endColumn || row < startRow || row > endRow) continue;
-          ctx.fillRect(column * stride - scroller.scrollLeft, row * stride - scroller.scrollTop, Math.max(2, cellSize), Math.max(2, cellSize));
-        }
-      }
-
-      if (tooltip) {
-        const column = tooltip.index % COLUMNS;
-        const row = Math.floor(tooltip.index / COLUMNS);
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1;
-        ctx.strokeRect(column * stride - scroller.scrollLeft - 1, row * stride - scroller.scrollTop - 1, cellSize + 2, cellSize + 2);
-      }
-    };
-
-    const schedule = () => {
-      cancelAnimationFrame(frame);
-      frame = requestAnimationFrame(draw);
-    };
-
-    const resizeObserver = new ResizeObserver(schedule);
-    resizeObserver.observe(wrapper);
-    scroller.addEventListener("scroll", schedule, { passive: true });
-    schedule();
-
-    return () => {
-      cancelAnimationFrame(frame);
-      resizeObserver.disconnect();
-      scroller.removeEventListener("scroll", schedule);
-    };
-  }, [cellSize, importedIndexes, mode, randomIndex, selectedIndexes, sortedImported, stride, tooltip]);
-
   function eventToIndex(event: MouseEvent | PointerEvent): number | null {
-    const wrapper = wrapperRef.current;
     const scroller = scrollerRef.current;
-    if (!wrapper || !scroller) return null;
-    const rect = wrapper.getBoundingClientRect();
+    const rect = rectRef.current ?? wrapperRef.current?.getBoundingClientRect();
+    if (!rect || !scroller) return null;
     const worldX = event.clientX - rect.left + scroller.scrollLeft;
     const worldY = event.clientY - rect.top + scroller.scrollTop;
     const column = Math.floor(worldX / stride);
@@ -156,6 +249,25 @@ export function CombinationGrid({
     if (column < 0 || column >= COLUMNS || row < 0 || row >= ROWS) return null;
     const index = row * COLUMNS + column;
     return index >= TOTAL_COMBINATIONS ? null : index;
+  }
+
+  function updateTooltip(event: PointerEvent<HTMLCanvasElement>, index: number | null) {
+    const tooltip = tooltipRef.current;
+    const previousIndex = drawStateRef.current.hoverIndex;
+    drawStateRef.current.hoverIndex = index;
+
+    if (!tooltip || index === null) {
+      if (tooltip) tooltip.hidden = true;
+      if (previousIndex !== null) scheduleDraw();
+      return;
+    }
+
+    tooltip.hidden = false;
+    tooltip.style.transform = `translate(${event.clientX + 14}px, ${event.clientY + 14}px)`;
+    if (previousIndex !== index) {
+      tooltip.textContent = `#${index.toLocaleString("en-US")} - ${formatCombination(indexToCombination(index))}`;
+      scheduleDraw();
+    }
   }
 
   function handlePointerMove(event: PointerEvent<HTMLCanvasElement>) {
@@ -167,12 +279,7 @@ export function CombinationGrid({
       return;
     }
 
-    const index = eventToIndex(event);
-    if (index === null) {
-      setTooltip(null);
-      return;
-    }
-    setTooltip({ x: event.clientX, y: event.clientY, index, numbers: indexToCombination(index) });
+    updateTooltip(event, eventToIndex(event));
   }
 
   function handlePointerDown(event: PointerEvent<HTMLCanvasElement>) {
@@ -192,8 +299,10 @@ export function CombinationGrid({
   }
 
   function handlePointerLeave() {
-    setTooltip(null);
     dragRef.current = null;
+    drawStateRef.current.hoverIndex = null;
+    if (tooltipRef.current) tooltipRef.current.hidden = true;
+    scheduleDraw();
   }
 
   function handleWheel(event: WheelEvent<HTMLCanvasElement>) {
@@ -226,11 +335,7 @@ export function CombinationGrid({
         onPointerLeave={handlePointerLeave}
         onWheel={handleWheel}
       />
-      {tooltip && (
-        <div className="tooltip" style={{ left: tooltip.x + 14, top: tooltip.y + 14 }}>
-          #{tooltip.index.toLocaleString("en-US")} - {formatCombination(tooltip.numbers)}
-        </div>
-      )}
+      <div ref={tooltipRef} className="tooltip" hidden />
     </div>
   );
 }
