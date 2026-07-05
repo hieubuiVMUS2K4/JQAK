@@ -1,4 +1,4 @@
-import { ChangeEvent, useMemo, useRef, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { CombinationGrid } from "./components/CombinationGrid";
 import { ImportPanel } from "./components/ImportPanel";
 import { LogPanel } from "./components/LogPanel";
@@ -15,7 +15,9 @@ import {
   randomCombination,
   validateCombination,
 } from "./utils/combinations";
+import { calculatedPick } from "./utils/calculatedPick";
 import { parseImportedText } from "./utils/importers";
+import defaultPower655Data from "../data/power655.jsonl?raw";
 
 let logId = 0;
 
@@ -48,6 +50,20 @@ function App() {
   function addLog(level: LogEntry["level"], message: string) {
     setLogs((current) => [{ id: ++logId, at: nowLabel(), level, message }, ...current].slice(0, 120));
   }
+
+  useEffect(() => {
+    try {
+      const result = parseImportedText(defaultPower655Data, "power655.jsonl");
+      setImportedIndexes(new Set(result.combinations.map((item) => item.index)));
+      addLog("success", `Auto-loaded data/power655.jsonl: ${result.combinations.length.toLocaleString("en-US")} bộ hợp lệ.`);
+      if (result.errors.length > 0) {
+        result.errors.slice(0, 8).forEach((error) => addLog("warn", error));
+        if (result.errors.length > 8) addLog("warn", `Auto-load còn ${result.errors.length - 8} lỗi khác đã rút gọn.`);
+      }
+    } catch (error) {
+      addLog("error", `Auto-load data/power655.jsonl thất bại: ${error instanceof Error ? error.message : "không đọc được dữ liệu"}.`);
+    }
+  }, []);
 
   function focusCell(index: number, nextZoom = Math.max(zoom, 3.2)) {
     setZoom(Math.min(8, Math.max(0.8, nextZoom)));
@@ -117,6 +133,20 @@ function App() {
     focusCell(index, Math.max(zoom, 3.6));
   }
 
+  function handleCalculatedPick() {
+    if (importedIndexes.size === 0) {
+      addLog("warn", "Calculated Pick cần dữ liệu import; đang dùng random fallback.");
+    }
+
+    const result = calculatedPick(importedIndexes);
+    setRandomIndex(result.index);
+    addLog(
+      "success",
+      `Calculated Pick: ${formatCombination(result.numbers)} tại #${result.index.toLocaleString("en-US")} | score ${result.score.toFixed(4)} | avg number freq ${result.averageNumberFrequency.toFixed(2)} | avg pair freq ${result.averagePairFrequency.toFixed(2)} | ${result.candidateCount.toLocaleString("en-US")} candidates.`,
+    );
+    focusCell(result.index, Math.max(zoom, 3.6));
+  }
+
   function handleExportSelected() {
     if (selected.size === 0) {
       addLog("warn", "Export Selected Cells: chưa có ô nào được chọn.");
@@ -161,6 +191,7 @@ function App() {
         }}
         onExportSelected={handleExportSelected}
         onRandomPick={handleRandomPick}
+        onCalculatedPick={handleCalculatedPick}
         onResetView={resetView}
         onToggleMode={() => {
           setMode((current) => (current === "grid" ? "heatmap" : "grid"));

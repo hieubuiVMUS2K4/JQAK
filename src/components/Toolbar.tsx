@@ -1,5 +1,6 @@
 import {
   Crosshair,
+  Calculator,
   Download,
   Eraser,
   Grid2X2,
@@ -20,6 +21,7 @@ type ToolbarProps = {
   onClearSelected: () => void;
   onExportSelected: () => void;
   onRandomPick: () => void;
+  onCalculatedPick: () => void;
   onResetView: () => void;
   onToggleMode: () => void;
   onZoomIn: () => void;
@@ -34,6 +36,7 @@ export function Toolbar({
   onClearSelected,
   onExportSelected,
   onRandomPick,
+  onCalculatedPick,
   onResetView,
   onToggleMode,
   onZoomIn,
@@ -60,6 +63,10 @@ export function Toolbar({
       <button onClick={onRandomPick} title="Random Pick">
         <Shuffle size={16} />
         Random Pick
+      </button>
+      <button onClick={onCalculatedPick} title="Calculated Pick">
+        <Calculator size={16} />
+        Calculated Pick
       </button>
       <button onClick={onResetView} title="Reset View">
         <RotateCcw size={16} />
