@@ -1,6 +1,7 @@
 import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import { CombinationGrid } from "./components/CombinationGrid";
 import { ImportPanel } from "./components/ImportPanel";
+import { LoginPage } from "./components/LoginPage";
 import { LogPanel } from "./components/LogPanel";
 import { SearchBox } from "./components/SearchBox";
 import { StatsPanel } from "./components/StatsPanel";
@@ -37,6 +38,7 @@ function downloadCsv(fileName: string, rows: string[]) {
 
 function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [currentUser, setCurrentUser] = useState<string | null>(() => localStorage.getItem("power655_user"));
   const [importedIndexes, setImportedIndexes] = useState<Set<number>>(() => new Set());
   const [selected, setSelected] = useState<Map<number, SelectedCombination>>(() => new Map());
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -49,6 +51,16 @@ function App() {
 
   function addLog(level: LogEntry["level"], message: string) {
     setLogs((current) => [{ id: ++logId, at: nowLabel(), level, message }, ...current].slice(0, 120));
+  }
+
+  function handleLogin(username: string) {
+    localStorage.setItem("power655_user", username);
+    setCurrentUser(username);
+  }
+
+  function handleLogout() {
+    localStorage.removeItem("power655_user");
+    setCurrentUser(null);
   }
 
   useEffect(() => {
@@ -167,6 +179,10 @@ function App() {
     addLog("info", "Reset View về đầu không gian tổ hợp.");
   }
 
+  if (!currentUser) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
   return (
     <main className="app-shell">
       <header className="app-header">
@@ -174,7 +190,12 @@ function App() {
           <p className="eyebrow">Vietlott Power 6/55</p>
           <h1>Combination Space Dashboard</h1>
         </div>
-        <SearchBox onSearch={handleSearch} />
+        <div className="header-actions">
+          <SearchBox onSearch={handleSearch} />
+          <button onClick={handleLogout} title="Logout">
+            Logout
+          </button>
+        </div>
       </header>
 
       <Toolbar
