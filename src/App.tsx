@@ -20,6 +20,8 @@ import { calculatedPick } from "./utils/calculatedPick";
 import { parseImportedText } from "./utils/importers";
 import defaultPower655Data from "../data/power655.jsonl?raw";
 
+const LOG_SERVER_URL = "http://127.0.0.1:8787/logs";
+
 let logId = 0;
 
 function nowLabel() {
@@ -36,6 +38,16 @@ function downloadCsv(fileName: string, rows: string[]) {
   URL.revokeObjectURL(url);
 }
 
+function persistLog(entry: LogEntry & { user: string }) {
+  fetch(LOG_SERVER_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(entry),
+  }).catch(() => {
+    console.debug("Log server is not running; skipped file history write.");
+  });
+}
+
 function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentUser, setCurrentUser] = useState<string | null>(() => localStorage.getItem("power655_user"));
@@ -50,7 +62,9 @@ function App() {
   const selectedIndexes = useMemo(() => new Set(selected.keys()), [selected]);
 
   function addLog(level: LogEntry["level"], message: string) {
-    setLogs((current) => [{ id: ++logId, at: nowLabel(), level, message }, ...current].slice(0, 120));
+    const entry = { id: ++logId, at: nowLabel(), level, message };
+    setLogs((current) => [entry, ...current].slice(0, 120));
+    persistLog({ ...entry, user: currentUser ?? "anonymous" });
   }
 
   function handleLogin(username: string) {
