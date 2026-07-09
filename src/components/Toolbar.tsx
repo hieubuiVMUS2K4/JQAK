@@ -24,6 +24,7 @@ type ToolbarProps = {
   onRandomPick: () => void;
   onCalculatedPick: () => void;
   onBacktestPick: () => void;
+  onStatTest: () => void;
   onResetView: () => void;
   onToggleMode: () => void;
   onZoomIn: () => void;
@@ -40,6 +41,7 @@ export function Toolbar({
   onRandomPick,
   onCalculatedPick,
   onBacktestPick,
+  onStatTest,
   onResetView,
   onToggleMode,
   onZoomIn,
@@ -74,6 +76,10 @@ export function Toolbar({
       <button onClick={onBacktestPick} title="Replay Backtest">
         <Activity size={16} />
         Backtest
+      </button>
+      <button onClick={onStatTest} title="Random Monte Carlo Statistical Test">
+        <Activity size={16} />
+        Stat Test
       </button>
       <button onClick={onResetView} title="Reset View">
         <RotateCcw size={16} />
