@@ -57,7 +57,7 @@ function App() {
   const [mode, setMode] = useState<GridMode>("grid");
   const [zoom, setZoom] = useState(1.4);
   const [randomIndex, setRandomIndex] = useState<number | null>(null);
-  const [focusIndex, setFocusIndex] = useState<number | null>(null);
+  const [focusRequest, setFocusRequest] = useState<{ index: number; id: number } | null>(null);
 
   const selectedIndexes = useMemo(() => new Set(selected.keys()), [selected]);
 
@@ -92,9 +92,8 @@ function App() {
   }, []);
 
   function focusCell(index: number, nextZoom = Math.max(zoom, 3.2)) {
-    setZoom(Math.min(8, Math.max(0.8, nextZoom)));
-    setFocusIndex(null);
-    requestAnimationFrame(() => setFocusIndex(index));
+    setZoom(Math.min(10, Math.max(0.55, nextZoom)));
+    setFocusRequest({ index, id: Date.now() + Math.random() });
   }
 
   function handleImportClick() {
@@ -189,7 +188,7 @@ function App() {
 
   function resetView() {
     setZoom(1.4);
-    setFocusIndex(0);
+    setFocusRequest({ index: 0, id: Date.now() + Math.random() });
     addLog("info", "Reset View về đầu không gian tổ hợp.");
   }
 
@@ -242,7 +241,7 @@ function App() {
             importedIndexes={importedIndexes}
             selectedIndexes={selectedIndexes}
             randomIndex={randomIndex}
-            focusIndex={focusIndex}
+            focusRequest={focusRequest}
             mode={mode}
             zoom={zoom}
             onZoomChange={setZoom}

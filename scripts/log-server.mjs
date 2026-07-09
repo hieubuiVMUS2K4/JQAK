@@ -1,11 +1,11 @@
 ﻿import { createServer } from "node:http";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const projectRoot = resolve(__dirname, "..");
-const logFile = resolve(projectRoot, "logs", "log-history.json");
+const logFile = resolve(projectRoot, "logs", "log-history.txt");
 const port = Number(process.env.LOG_SERVER_PORT ?? 8787);
 const host = process.env.LOG_SERVER_HOST ?? "127.0.0.1";
 
@@ -20,23 +20,8 @@ async function ensureLogFile() {
   try {
     await readFile(logFile, "utf8");
   } catch {
-    await writeFile(logFile, "[]\n", "utf8");
+    await writeFile(logFile, "", "utf8");
   }
-}
-
-async function readHistory() {
-  await ensureLogFile();
-  const content = await readFile(logFile, "utf8");
-  if (!content.trim()) return [];
-  const parsed = JSON.parse(content);
-  return Array.isArray(parsed) ? parsed : [];
-}
-
-async function writeHistory(history) {
-  await ensureLogFile();
-  const tempFile = `${logFile}.tmp`;
-  await writeFile(tempFile, `${JSON.stringify(history, null, 2)}\n`, "utf8");
-  await rename(tempFile, logFile);
 }
 
 function readBody(request) {
@@ -54,12 +39,16 @@ function readBody(request) {
   });
 }
 
-function sendJson(response, statusCode, payload) {
+function send(response, statusCode, body, contentType = "application/json; charset=utf-8") {
   response.writeHead(statusCode, {
     ...corsHeaders,
-    "Content-Type": "application/json; charset=utf-8",
+    "Content-Type": contentType,
   });
-  response.end(JSON.stringify(payload));
+  response.end(body);
+}
+
+function sendJson(response, statusCode, payload) {
+  send(response, statusCode, JSON.stringify(payload));
 }
 
 function normalizeEntries(payload) {
@@ -72,6 +61,14 @@ function normalizeEntries(payload) {
     user: typeof entry?.user === "string" ? entry.user : "anonymous",
     received_at: new Date().toISOString(),
   })).filter((entry) => entry.message.trim().length > 0);
+}
+
+function formatLogLine(entry) {
+  const message = entry.message.replace(/[\r\n]+/g, " ").trim();
+  const user = entry.user.replace(/[\r\n]+/g, " ").trim();
+  const appTime = entry.at ? ` app_time=${entry.at}` : "";
+  const id = entry.id === null ? "" : ` id=${entry.id}`;
+  return `[${entry.received_at}] [${entry.level.toUpperCase()}] user=${user}${id}${appTime} ${message}`;
 }
 
 const server = createServer(async (request, response) => {
@@ -90,7 +87,9 @@ const server = createServer(async (request, response) => {
     }
 
     if (request.method === "GET" && url.pathname === "/logs") {
-      sendJson(response, 200, await readHistory());
+      await ensureLogFile();
+      const content = await readFile(logFile, "utf8");
+      send(response, 200, content, "text/plain; charset=utf-8");
       return;
     }
 
@@ -102,10 +101,10 @@ const server = createServer(async (request, response) => {
         return;
       }
 
-      const history = await readHistory();
-      history.push(...entries);
-      await writeHistory(history);
-      sendJson(response, 201, { ok: true, appended: entries.length, total: history.length });
+      await ensureLogFile();
+      const lines = entries.map(formatLogLine).join("\n") + "\n";
+      await appendFile(logFile, lines, "utf8");
+      sendJson(response, 201, { ok: true, appended: entries.length, logFile });
       return;
     }
 
@@ -118,5 +117,5 @@ const server = createServer(async (request, response) => {
 await ensureLogFile();
 server.listen(port, host, () => {
   console.log(`Log server listening at http://${host}:${port}`);
-  console.log(`Writing history to ${logFile}`);
+  console.log(`Appending history to ${logFile}`);
 });

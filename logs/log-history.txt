@@ -1,0 +1,14 @@
+[2026-07-07T13:31:38.563Z] [SUCCESS] user=admin id=1 app_time=20:31:38 Auto-loaded data/power655.jsonl: 1,368 bộ hợp lệ.
+[2026-07-07T13:31:38.563Z] [SUCCESS] user=admin id=2 app_time=20:31:38 Auto-loaded data/power655.jsonl: 1,368 bộ hợp lệ.
+[2026-07-07T13:31:42.270Z] [SUCCESS] user=admin id=3 app_time=20:31:42 Calculated Pick: 04 07 10 15 28 37 tại #9,108,666 | score 0.4125 | avg number freq 131.00 | avg pair freq 10.07 | 4,999 candidates.
+[2026-07-07T14:11:26.411Z] [SUCCESS] user=admin id=4 app_time=21:11:26 Calculated Pick: 04 15 19 28 37 50 tại #10,260,218 | score 0.4284 | avg number freq 132.50 | avg pair freq 9.93 | 5,000 candidates.
+[2026-07-09T12:08:22.940Z] [SUCCESS] user=admin id=1 app_time=19:08:22 Auto-loaded data/power655.jsonl: 1,368 bộ hợp lệ.
+[2026-07-09T12:08:22.942Z] [SUCCESS] user=admin id=2 app_time=19:08:22 Auto-loaded data/power655.jsonl: 1,368 bộ hợp lệ.
+[2026-07-09T12:09:27.935Z] [SUCCESS] user=admin id=1 app_time=19:09:27 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:09:27.944Z] [SUCCESS] user=admin id=2 app_time=19:09:27 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:09:39.895Z] [SUCCESS] user=admin id=1 app_time=19:09:39 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:09:39.901Z] [SUCCESS] user=admin id=2 app_time=19:09:39 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:10:10.769Z] [INFO] user=admin id=3 app_time=19:10:10 Search 02 09 10 14 17 49 tại #4,501,076.
+[2026-07-09T12:10:46.743Z] [SUCCESS] user=admin id=4 app_time=19:10:46 Calculated Pick: 04 15 18 36 37 52 tại #10,255,036 | score 0.4075 | avg number freq 138.00 | avg pair freq 10.40 | 5,000 candidates.
+[2026-07-09T12:11:50.997Z] [SUCCESS] user=admin id=5 app_time=19:11:50 Calculated Pick: 02 06 15 37 50 54 tại #4,033,093 | score 0.4240 | avg number freq 133.83 | avg pair freq 10.67 | 4,999 candidates.
+[2026-07-09T12:11:55.420Z] [SUCCESS] user=admin id=6 app_time=19:11:55 Calculated Pick: 02 04 28 36 48 49 tại #3,664,588 | score 0.4176 | avg number freq 138.17 | avg pair freq 9.40 | 5,000 candidates.

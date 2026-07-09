@@ -11,7 +11,7 @@ type CombinationGridProps = {
   importedIndexes: Set<number>;
   selectedIndexes: Set<number>;
   randomIndex: number | null;
-  focusIndex: number | null;
+  focusRequest: { index: number; id: number } | null;
   mode: GridMode;
   zoom: number;
   onZoomChange: (zoom: number) => void;
@@ -43,7 +43,7 @@ export function CombinationGrid({
   importedIndexes,
   selectedIndexes,
   randomIndex,
-  focusIndex,
+  focusRequest,
   mode,
   zoom,
   onZoomChange,
@@ -268,15 +268,23 @@ export function CombinationGrid({
 
   useEffect(() => {
     const scroller = scrollerRef.current;
-    if (!scroller || focusIndex === null) return;
-    const row = Math.floor(focusIndex / COLUMNS);
-    const column = focusIndex % COLUMNS;
-    scroller.scrollTo({
-      left: Math.max(0, column * stride - scroller.clientWidth / 2),
-      top: Math.max(0, row * stride - scroller.clientHeight / 2),
-      behavior: "smooth",
+    if (!scroller || focusRequest === null) return;
+
+    const frame = requestAnimationFrame(() => {
+      const row = Math.floor(focusRequest.index / COLUMNS);
+      const column = focusRequest.index % COLUMNS;
+      const maxLeft = Math.max(0, scroller.scrollWidth - scroller.clientWidth);
+      const maxTop = Math.max(0, scroller.scrollHeight - scroller.clientHeight);
+      const left = Math.min(maxLeft, Math.max(0, column * stride + cellSize / 2 - scroller.clientWidth / 2));
+      const top = Math.min(maxTop, Math.max(0, row * stride + cellSize / 2 - scroller.clientHeight / 2));
+
+      drawStateRef.current.hoverIndex = focusRequest.index;
+      scroller.scrollTo({ left, top, behavior: "smooth" });
+      scheduleDraw();
     });
-  }, [focusIndex, stride]);
+
+    return () => cancelAnimationFrame(frame);
+  }, [cellSize, focusRequest, stride]);
 
   function eventToIndex(event: MouseEvent | PointerEvent): number | null {
     const scroller = scrollerRef.current;
