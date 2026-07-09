@@ -1,6 +1,7 @@
 import {
   Crosshair,
   Calculator,
+  Activity,
   Download,
   Eraser,
   Grid2X2,
@@ -22,6 +23,7 @@ type ToolbarProps = {
   onExportSelected: () => void;
   onRandomPick: () => void;
   onCalculatedPick: () => void;
+  onBacktestPick: () => void;
   onResetView: () => void;
   onToggleMode: () => void;
   onZoomIn: () => void;
@@ -37,6 +39,7 @@ export function Toolbar({
   onExportSelected,
   onRandomPick,
   onCalculatedPick,
+  onBacktestPick,
   onResetView,
   onToggleMode,
   onZoomIn,
@@ -67,6 +70,10 @@ export function Toolbar({
       <button onClick={onCalculatedPick} title="Calculated Pick">
         <Calculator size={16} />
         Calculated Pick
+      </button>
+      <button onClick={onBacktestPick} title="Replay Backtest">
+        <Activity size={16} />
+        Backtest
       </button>
       <button onClick={onResetView} title="Reset View">
         <RotateCcw size={16} />

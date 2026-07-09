@@ -12,3 +12,46 @@
 [2026-07-09T12:10:46.743Z] [SUCCESS] user=admin id=4 app_time=19:10:46 Calculated Pick: 04 15 18 36 37 52 tại #10,255,036 | score 0.4075 | avg number freq 138.00 | avg pair freq 10.40 | 5,000 candidates.
 [2026-07-09T12:11:50.997Z] [SUCCESS] user=admin id=5 app_time=19:11:50 Calculated Pick: 02 06 15 37 50 54 tại #4,033,093 | score 0.4240 | avg number freq 133.83 | avg pair freq 10.67 | 4,999 candidates.
 [2026-07-09T12:11:55.420Z] [SUCCESS] user=admin id=6 app_time=19:11:55 Calculated Pick: 02 04 28 36 48 49 tại #3,664,588 | score 0.4176 | avg number freq 138.17 | avg pair freq 9.40 | 5,000 candidates.
+[2026-07-09T12:16:48.993Z] [SUCCESS] user=admin id=1 app_time=19:16:48 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:16:49.003Z] [SUCCESS] user=admin id=2 app_time=19:16:49 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:17:29.895Z] [SUCCESS] user=admin id=3 app_time=19:17:29 Calculated Pick: 04 06 15 16 28 54 tại #8,972,449 | score 0.4225 | avg number freq 132.67 | avg pair freq 10.87 | 19,996 candidates.
+[2026-07-09T12:26:27.972Z] [SUCCESS] user=admin id=1 app_time=19:26:27 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:26:27.980Z] [SUCCESS] user=admin id=2 app_time=19:26:27 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:26:43.901Z] [SUCCESS] user=admin id=1 app_time=19:26:43 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:26:43.911Z] [SUCCESS] user=admin id=2 app_time=19:26:43 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:26:55.875Z] [SUCCESS] user=admin id=1 app_time=19:26:55 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:26:55.888Z] [SUCCESS] user=admin id=2 app_time=19:26:55 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:28:02.944Z] [SUCCESS] user=admin id=1 app_time=19:28:02 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:28:02.951Z] [SUCCESS] user=admin id=2 app_time=19:28:02 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:29:14.925Z] [SUCCESS] user=admin id=1 app_time=19:29:14 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:29:14.934Z] [SUCCESS] user=admin id=2 app_time=19:29:14 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T12:30:45.838Z] [INFO] user=admin id=3 app_time=19:30:45 Replay Backtest started: 1,369 draws, 5,000 candidates/draw.
+[2026-07-09T12:30:47.346Z] [INFO] user=admin id=4 app_time=19:30:47 Replay Backtest progress: 50/1368 draws, best=2, avg=0.640.
+[2026-07-09T12:30:48.921Z] [INFO] user=admin id=5 app_time=19:30:48 Replay Backtest progress: 100/1368 draws, best=2, avg=0.720.
+[2026-07-09T12:30:50.495Z] [INFO] user=admin id=6 app_time=19:30:50 Replay Backtest progress: 150/1368 draws, best=3, avg=0.787.
+[2026-07-09T12:30:52.045Z] [INFO] user=admin id=7 app_time=19:30:52 Replay Backtest progress: 200/1368 draws, best=3, avg=0.765.
+[2026-07-09T12:30:53.574Z] [INFO] user=admin id=8 app_time=19:30:53 Replay Backtest progress: 250/1368 draws, best=3, avg=0.720.
+[2026-07-09T12:30:55.098Z] [INFO] user=admin id=9 app_time=19:30:55 Replay Backtest progress: 300/1368 draws, best=3, avg=0.693.
+[2026-07-09T12:30:56.640Z] [INFO] user=admin id=10 app_time=19:30:56 Replay Backtest progress: 350/1368 draws, best=3, avg=0.686.
+[2026-07-09T12:30:58.208Z] [INFO] user=admin id=11 app_time=19:30:58 Replay Backtest progress: 400/1368 draws, best=3, avg=0.675.
+[2026-07-09T12:30:59.734Z] [INFO] user=admin id=12 app_time=19:30:59 Replay Backtest progress: 450/1368 draws, best=3, avg=0.664.
+[2026-07-09T12:31:01.274Z] [INFO] user=admin id=13 app_time=19:31:01 Replay Backtest progress: 500/1368 draws, best=3, avg=0.674.
+[2026-07-09T12:31:02.824Z] [INFO] user=admin id=14 app_time=19:31:02 Replay Backtest progress: 550/1368 draws, best=3, avg=0.665.
+[2026-07-09T12:31:04.380Z] [INFO] user=admin id=15 app_time=19:31:04 Replay Backtest progress: 600/1368 draws, best=4, avg=0.675.
+[2026-07-09T12:31:05.927Z] [INFO] user=admin id=16 app_time=19:31:05 Replay Backtest progress: 650/1368 draws, best=4, avg=0.668.
+[2026-07-09T12:31:07.495Z] [INFO] user=admin id=17 app_time=19:31:07 Replay Backtest progress: 700/1368 draws, best=4, avg=0.667.
+[2026-07-09T12:31:09.092Z] [INFO] user=admin id=18 app_time=19:31:09 Replay Backtest progress: 750/1368 draws, best=4, avg=0.673.
+[2026-07-09T12:31:10.671Z] [INFO] user=admin id=19 app_time=19:31:10 Replay Backtest progress: 800/1368 draws, best=4, avg=0.675.
+[2026-07-09T12:31:12.266Z] [INFO] user=admin id=20 app_time=19:31:12 Replay Backtest progress: 850/1368 draws, best=4, avg=0.674.
+[2026-07-09T12:31:13.900Z] [INFO] user=admin id=21 app_time=19:31:13 Replay Backtest progress: 900/1368 draws, best=4, avg=0.678.
+[2026-07-09T12:31:15.507Z] [INFO] user=admin id=22 app_time=19:31:15 Replay Backtest progress: 950/1368 draws, best=4, avg=0.679.
+[2026-07-09T12:31:17.171Z] [INFO] user=admin id=23 app_time=19:31:17 Replay Backtest progress: 1000/1368 draws, best=4, avg=0.682.
+[2026-07-09T12:31:18.820Z] [INFO] user=admin id=24 app_time=19:31:18 Replay Backtest progress: 1050/1368 draws, best=4, avg=0.670.
+[2026-07-09T12:31:20.486Z] [INFO] user=admin id=25 app_time=19:31:20 Replay Backtest progress: 1100/1368 draws, best=4, avg=0.666.
+[2026-07-09T12:31:22.131Z] [INFO] user=admin id=26 app_time=19:31:22 Replay Backtest progress: 1150/1368 draws, best=4, avg=0.663.
+[2026-07-09T12:31:23.838Z] [INFO] user=admin id=27 app_time=19:31:23 Replay Backtest progress: 1200/1368 draws, best=4, avg=0.659.
+[2026-07-09T12:31:25.488Z] [INFO] user=admin id=28 app_time=19:31:25 Replay Backtest progress: 1250/1368 draws, best=4, avg=0.652.
+[2026-07-09T12:31:27.167Z] [INFO] user=admin id=29 app_time=19:31:27 Replay Backtest progress: 1300/1368 draws, best=4, avg=0.653.
+[2026-07-09T12:31:28.840Z] [INFO] user=admin id=30 app_time=19:31:28 Replay Backtest progress: 1350/1368 draws, best=4, avg=0.648.
+[2026-07-09T12:31:29.454Z] [SUCCESS] user=admin id=31 app_time=19:31:29 Replay Backtest done: tested=1,368, exact=0, best=4, avg matches=0.648, distribution [0:672 1:527 2:148 3:20 4:1 5:0 6:0].
+[2026-07-09T12:31:29.455Z] [INFO] user=admin id=32 app_time=19:31:29 Best replay pick at draw #586: predicted 06 14 25 43 45 52 vs actual 06 12 14 27 43 45.

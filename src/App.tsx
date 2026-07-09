@@ -6,7 +6,7 @@ import { LogPanel } from "./components/LogPanel";
 import { SearchBox } from "./components/SearchBox";
 import { StatsPanel } from "./components/StatsPanel";
 import { Toolbar } from "./components/Toolbar";
-import type { GridMode, LogEntry, SelectedCombination } from "./types";
+import type { GridMode, ImportedCombination, LogEntry, SelectedCombination } from "./types";
 import {
   combinationToIndex,
   formatCombination,
@@ -21,6 +21,7 @@ import { parseImportedText } from "./utils/importers";
 import defaultPower655Data from "../data/power655.jsonl?raw";
 
 const LOG_SERVER_URL = "http://127.0.0.1:8787/logs";
+const BACKTEST_CANDIDATES_PER_DRAW = 5_000;
 
 let logId = 0;
 
@@ -52,12 +53,14 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentUser, setCurrentUser] = useState<string | null>(() => localStorage.getItem("power655_user"));
   const [importedIndexes, setImportedIndexes] = useState<Set<number>>(() => new Set());
+  const [importedHistory, setImportedHistory] = useState<ImportedCombination[]>([]);
   const [selected, setSelected] = useState<Map<number, SelectedCombination>>(() => new Map());
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [mode, setMode] = useState<GridMode>("grid");
   const [zoom, setZoom] = useState(1.4);
   const [randomIndex, setRandomIndex] = useState<number | null>(null);
   const [focusRequest, setFocusRequest] = useState<{ index: number; id: number } | null>(null);
+  const [isBacktesting, setIsBacktesting] = useState(false);
 
   const selectedIndexes = useMemo(() => new Set(selected.keys()), [selected]);
 
@@ -81,6 +84,7 @@ function App() {
     try {
       const result = parseImportedText(defaultPower655Data, "power655.jsonl");
       setImportedIndexes(new Set(result.combinations.map((item) => item.index)));
+      setImportedHistory(result.combinations);
       addLog("success", `Auto-loaded data/power655.jsonl: ${result.combinations.length.toLocaleString("en-US")} bộ hợp lệ.`);
       if (result.errors.length > 0) {
         result.errors.slice(0, 8).forEach((error) => addLog("warn", error));
@@ -112,6 +116,11 @@ function App() {
         const next = new Set(current);
         result.combinations.forEach((item) => next.add(item.index));
         return next;
+      });
+      setImportedHistory((current) => {
+        const known = new Set(current.map((item) => item.index));
+        const additions = result.combinations.filter((item) => !known.has(item.index));
+        return [...current, ...additions];
       });
 
       addLog("success", `Import file "${file.name}" thành công: ${result.combinations.length.toLocaleString("en-US")} bộ hợp lệ.`);
@@ -172,6 +181,81 @@ function App() {
     focusCell(result.index, Math.max(zoom, 3.6));
   }
 
+  async function handleBacktestPick() {
+    if (isBacktesting) {
+      addLog("warn", "Replay Backtest đang chạy, hãy đợi lượt hiện tại hoàn tất.");
+      return;
+    }
+    if (importedHistory.length < 2) {
+      addLog("warn", "Replay Backtest cần ít nhất 2 bộ số lịch sử.");
+      return;
+    }
+
+    setIsBacktesting(true);
+    addLog(
+      "info",
+      `Replay Backtest started: ${importedHistory.length.toLocaleString("en-US")} draws, ${BACKTEST_CANDIDATES_PER_DRAW.toLocaleString("en-US")} candidates/draw.`,
+    );
+
+    const trainingIndexes = new Set<number>([importedHistory[0].index]);
+    const matchDistribution = Array.from({ length: 7 }, () => 0);
+    let exactHits = 0;
+    let totalMatches = 0;
+    let bestMatch = -1;
+    let bestPrediction: { index: number; numbers: number[]; actual: number[]; drawIndex: number } | null = null;
+
+    try {
+      for (let drawIndex = 1; drawIndex < importedHistory.length; drawIndex += 1) {
+        const actual = importedHistory[drawIndex];
+        const prediction = calculatedPick(trainingIndexes, BACKTEST_CANDIDATES_PER_DRAW);
+        const matches = prediction.numbers.filter((number) => actual.numbers.includes(number)).length;
+
+        matchDistribution[matches] += 1;
+        totalMatches += matches;
+        if (matches === 6) exactHits += 1;
+        if (matches > bestMatch) {
+          bestMatch = matches;
+          bestPrediction = {
+            index: prediction.index,
+            numbers: prediction.numbers,
+            actual: actual.numbers,
+            drawIndex,
+          };
+        }
+
+        trainingIndexes.add(actual.index);
+
+        if (drawIndex % 50 === 0) {
+          addLog(
+            "info",
+            `Replay Backtest progress: ${drawIndex}/${importedHistory.length - 1} draws, best=${bestMatch}, avg=${(totalMatches / drawIndex).toFixed(3)}.`,
+          );
+          await new Promise((resolve) => setTimeout(resolve, 0));
+        }
+      }
+
+      const testedDraws = importedHistory.length - 1;
+      const distributionText = matchDistribution.map((count, matches) => `${matches}:${count}`).join(" ");
+      addLog(
+        "success",
+        `Replay Backtest done: tested=${testedDraws.toLocaleString("en-US")}, exact=${exactHits}, best=${bestMatch}, avg matches=${(totalMatches / testedDraws).toFixed(3)}, distribution [${distributionText}].`,
+      );
+
+      if (bestPrediction) {
+        setRandomIndex(bestPrediction.index);
+        focusCell(bestPrediction.index, Math.max(zoom, 3.6));
+        addLog(
+          "info",
+          `Best replay pick at draw #${bestPrediction.drawIndex + 1}: predicted ${formatCombination(bestPrediction.numbers)} vs actual ${formatCombination(bestPrediction.actual)}.`,
+        );
+      }
+    } catch (error) {
+      addLog("error", `Replay Backtest failed: ${error instanceof Error ? error.message : "unknown error"}.`);
+    } finally {
+      setIsBacktesting(false);
+    }
+  }
+
   function handleExportSelected() {
     if (selected.size === 0) {
       addLog("warn", "Export Selected Cells: chưa có ô nào được chọn.");
@@ -217,6 +301,7 @@ function App() {
         onImportClick={handleImportClick}
         onClearImported={() => {
           setImportedIndexes(new Set());
+          setImportedHistory([]);
           addLog("info", "Clear Imported Data hoàn tất.");
         }}
         onClearSelected={() => {
@@ -226,6 +311,7 @@ function App() {
         onExportSelected={handleExportSelected}
         onRandomPick={handleRandomPick}
         onCalculatedPick={handleCalculatedPick}
+        onBacktestPick={handleBacktestPick}
         onResetView={resetView}
         onToggleMode={() => {
           setMode((current) => (current === "grid" ? "heatmap" : "grid"));

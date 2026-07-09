@@ -16,7 +16,7 @@ type HistoryStats = {
   maxPairFrequency: number;
 };
 
-const DEFAULT_CANDIDATE_COUNT = 5_000;
+const DEFAULT_CANDIDATE_COUNT = 20_000;
 
 function pairKey(a: number, b: number) {
   return `${a}:${b}`;
