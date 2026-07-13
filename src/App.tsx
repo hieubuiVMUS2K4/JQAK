@@ -23,6 +23,7 @@ import defaultPower655Data from "../data/power655.jsonl?raw";
 
 const LOG_SERVER_URL = "http://127.0.0.1:8787/logs";
 const RANDOM_STAT_TEST_RUNS = 500;
+const CALCULATED_PICK_MEMORY_SIZE = 12;
 
 let logId = 0;
 
@@ -63,6 +64,7 @@ function App() {
   const [focusRequest, setFocusRequest] = useState<{ index: number; id: number } | null>(null);
   const [isBacktesting, setIsBacktesting] = useState(false);
   const [isStatTesting, setIsStatTesting] = useState(false);
+  const [recentCalculatedPicks, setRecentCalculatedPicks] = useState<number[][]>([]);
 
   const selectedIndexes = useMemo(() => new Set(selected.keys()), [selected]);
 
@@ -174,11 +176,14 @@ function App() {
       addLog("warn", "Calculated Pick cần dữ liệu import; đang dùng random fallback.");
     }
 
-    const result = calculatedPick(importedIndexes);
+    const result = calculatedPick(importedIndexes, undefined, {
+      diversityMemory: recentCalculatedPicks,
+    });
     setRandomIndex(result.index);
+    setRecentCalculatedPicks((current) => [result.numbers, ...current].slice(0, CALCULATED_PICK_MEMORY_SIZE));
     addLog(
       "success",
-      `Calculated Pick: ${formatCombination(result.numbers)} tại #${result.index.toLocaleString("en-US")} | score ${result.score.toFixed(4)} | avg number freq ${result.averageNumberFrequency.toFixed(2)} | avg pair freq ${result.averagePairFrequency.toFixed(2)} | ${result.candidateCount.toLocaleString("en-US")} candidates.`,
+      `Calculated Pick: ${formatCombination(result.numbers)} tại #${result.index.toLocaleString("en-US")} | score ${result.score.toFixed(4)} | base ${result.baseScore.toFixed(4)} | diversity penalty ${result.diversityPenalty.toFixed(4)} | avg number freq ${result.averageNumberFrequency.toFixed(2)} | avg pair freq ${result.averagePairFrequency.toFixed(2)} | ${result.candidateCount.toLocaleString("en-US")} candidates.`,
     );
     focusCell(result.index, Math.max(zoom, 3.6));
   }
@@ -338,6 +343,7 @@ function App() {
         onClearImported={() => {
           setImportedIndexes(new Set());
           setImportedHistory([]);
+          setRecentCalculatedPicks([]);
           addLog("info", "Clear Imported Data hoàn tất.");
         }}
         onClearSelected={() => {

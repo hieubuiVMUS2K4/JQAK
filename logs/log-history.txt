@@ -1,43 +1,11 @@
-[2026-07-09T13:13:20.855Z] [SUCCESS] user=admin id=3 app_time=20:13:20 Calculated Pick: 02 04 28 37 50 54 tại #3,664,757 | score 0.4368 | avg number freq 131.67 | avg pair freq 10.20 | 9,997 candidates.
-[2026-07-09T13:13:25.784Z] [INFO] user=admin id=4 app_time=20:13:25 Replay Backtest comparison started: 1,369 historical draws.
-[2026-07-09T13:13:29.060Z] [INFO] user=admin id=5 app_time=20:13:29 Replay progress 100/1368: Your avg=0.790, Random avg=0.680.
-[2026-07-09T13:13:34.206Z] [INFO] user=admin id=6 app_time=20:13:34 Replay progress 200/1368: Your avg=0.790, Random avg=0.700.
-[2026-07-09T13:13:42.375Z] [INFO] user=admin id=7 app_time=20:13:42 Replay progress 300/1368: Your avg=0.723, Random avg=0.677.
-[2026-07-09T13:14:10.267Z] [INFO] user=admin id=8 app_time=20:14:10 Replay progress 400/1368: Your avg=0.705, Random avg=0.662.
-[2026-07-09T13:14:18.307Z] [INFO] user=admin id=9 app_time=20:14:18 Replay progress 500/1368: Your avg=0.706, Random avg=0.648.
-[2026-07-09T13:14:24.094Z] [INFO] user=admin id=10 app_time=20:14:24 Replay progress 600/1368: Your avg=0.707, Random avg=0.648.
-[2026-07-09T13:14:30.686Z] [INFO] user=admin id=11 app_time=20:14:30 Replay progress 700/1368: Your avg=0.714, Random avg=0.660.
-[2026-07-09T13:15:41.670Z] [INFO] user=admin id=12 app_time=20:15:41 Replay progress 800/1368: Your avg=0.701, Random avg=0.677.
-[2026-07-09T13:15:56.852Z] [INFO] user=admin id=13 app_time=20:15:56 Replay progress 900/1368: Your avg=0.700, Random avg=0.677.
-[2026-07-09T13:16:09.122Z] [INFO] user=admin id=14 app_time=20:16:09 Replay progress 1000/1368: Your avg=0.695, Random avg=0.668.
-[2026-07-09T13:16:37.386Z] [INFO] user=admin id=15 app_time=20:16:37 Replay progress 1100/1368: Your avg=0.685, Random avg=0.669.
-[2026-07-09T13:17:28.395Z] [INFO] user=admin id=16 app_time=20:17:28 Replay progress 1200/1368: Your avg=0.682, Random avg=0.653.
-[2026-07-09T13:17:35.905Z] [INFO] user=admin id=17 app_time=20:17:35 Replay progress 1300/1368: Your avg=0.671, Random avg=0.642.
-[2026-07-09T13:17:41.226Z] [SUCCESS] user=admin id=18 app_time=20:17:41 Replay Backtest done. Tested=1,368 draws. Baseline included. No strategy used actual draw data before picking.
-[2026-07-09T13:17:41.227Z] [SUCCESS] user=admin id=19 app_time=20:17:41 Your Algorithm: avg=0.671 | 3=22 | 4=0 | 5=0 | 6=0 | best=3 | ROI=-91.96% | dist [0:654 1:532 2:160 3:22 4:0 5:0 6:0].
-[2026-07-09T13:17:41.227Z] [INFO] user=admin id=26 app_time=20:17:41 Frequency Weighted: avg=0.637 | 3=18 | 4=0 | 5=0 | 6=0 | best=3 | ROI=-93.42% | dist [0:667 1:549 2:134 3:18 4:0 5:0 6:0].
-[2026-07-09T13:17:41.229Z] [INFO] user=admin id=28 app_time=20:17:41 Best replay sample from top strategy Your Algorithm at draw #52: predicted 03 22 39 49 53 55 vs actual 02 19 39 49 51 53.
-[2026-07-09T13:17:41.228Z] [SUCCESS] user=admin id=27 app_time=20:17:41 Your vs Random: avg delta=0.032, 3+ hits delta=0.
-[2026-07-09T13:17:41.229Z] [INFO] user=admin id=20 app_time=20:17:41 Cold Numbers: avg=0.658 | 3=22 | 4=0 | 5=0 | 6=0 | best=3 | ROI=-91.96% | dist [0:654 1:550 2:142 3:22 4:0 5:0 6:0].
-[2026-07-09T13:17:41.254Z] [INFO] user=admin id=24 app_time=20:17:41 Pair Frequency: avg=0.646 | 3=19 | 4=4 | 5=0 | 6=0 | best=4 | ROI=-78.44% | dist [0:674 1:531 2:140 3:19 4:4 5:0 6:0].
-[2026-07-09T13:17:41.252Z] [INFO] user=admin id=23 app_time=20:17:41 Hot Numbers: avg=0.648 | 3=18 | 4=1 | 5=0 | 6=0 | best=4 | ROI=-89.77% | dist [0:669 1:531 2:149 3:18 4:1 5:0 6:0].
-[2026-07-09T13:17:41.230Z] [INFO] user=admin id=21 app_time=20:17:41 Triple Frequency: avg=0.657 | 3=19 | 4=2 | 5=0 | 6=0 | best=4 | ROI=-85.75% | dist [0:668 1:524 2:155 3:19 4:2 5:0 6:0].
-[2026-07-09T13:17:41.230Z] [INFO] user=admin id=22 app_time=20:17:41 Delay: avg=0.650 | 3=14 | 4=1 | 5=0 | 6=0 | best=4 | ROI=-91.23% | dist [0:662 1:539 2:152 3:14 4:1 5:0 6:0].
-[2026-07-09T13:17:41.255Z] [INFO] user=admin id=25 app_time=20:17:41 Random: avg=0.639 | 3=22 | 4=0 | 5=0 | 6=0 | best=3 | ROI=-91.96% | dist [0:681 1:522 2:143 3:22 4:0 5:0 6:0].
-[2026-07-09T13:18:34.881Z] [SUCCESS] user=admin id=1 app_time=20:18:34 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
-[2026-07-09T13:18:34.888Z] [SUCCESS] user=admin id=2 app_time=20:18:34 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
-[2026-07-09T13:18:38.099Z] [SUCCESS] user=admin id=3 app_time=20:18:38 Calculated Pick: 04 27 30 35 37 54 tại #10,867,990 | score 0.4212 | avg number freq 134.50 | avg pair freq 10.47 | 49,957 candidates.
-[2026-07-09T13:18:53.900Z] [SUCCESS] user=admin id=1 app_time=20:18:53 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
-[2026-07-09T13:18:53.907Z] [SUCCESS] user=admin id=2 app_time=20:18:53 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
-[2026-07-09T13:18:57.982Z] [SUCCESS] user=admin id=3 app_time=20:18:57 Calculated Pick: 02 04 16 27 28 54 tại #3,597,255 | score 0.4284 | avg number freq 133.50 | avg pair freq 10.40 | 99,827 candidates.
-[2026-07-09T13:19:12.994Z] [SUCCESS] user=admin id=4 app_time=20:19:12 Calculated Pick: 04 05 15 28 36 55 tại #8,766,968 | score 0.4244 | avg number freq 137.17 | avg pair freq 9.60 | 99,826 candidates.
-[2026-07-09T13:19:17.125Z] [SUCCESS] user=admin id=5 app_time=20:19:17 Calculated Pick: 02 04 14 28 37 52 tại #3,578,783 | score 0.4259 | avg number freq 133.83 | avg pair freq 10.27 | 99,831 candidates.
-[2026-07-09T13:19:25.833Z] [SUCCESS] user=admin id=1 app_time=20:19:25 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
-[2026-07-09T13:19:25.839Z] [SUCCESS] user=admin id=2 app_time=20:19:25 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
-[2026-07-09T13:19:27.821Z] [SUCCESS] user=admin id=3 app_time=20:19:27 Calculated Pick: 04 11 15 17 37 50 tại #9,794,222 | score 0.4036 | avg number freq 136.83 | avg pair freq 10.80 | 999 candidates.
-[2026-07-09T13:19:34.902Z] [SUCCESS] user=admin id=1 app_time=20:19:34 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
-[2026-07-09T13:19:34.909Z] [SUCCESS] user=admin id=2 app_time=20:19:34 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
-[2026-07-09T13:19:38.935Z] [SUCCESS] user=admin id=3 app_time=20:19:38 Calculated Pick: 04 06 15 28 36 55 tại #8,978,844 | score 0.4333 | avg number freq 134.00 | avg pair freq 9.73 | 149,583 candidates.
-[2026-07-09T13:20:38.920Z] [SUCCESS] user=admin id=1 app_time=20:20:38 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
-[2026-07-09T13:20:38.926Z] [SUCCESS] user=admin id=2 app_time=20:20:38 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
-[2026-07-09T13:20:41.856Z] [SUCCESS] user=admin id=3 app_time=20:20:41 Calculated Pick: 02 04 27 28 38 53 tại #3,659,596 | score 0.4085 | avg number freq 137.33 | avg pair freq 10.87 | 7,777 candidates.
+[2026-07-09T13:42:19.543Z] [SUCCESS] user=admin id=1 app_time=20:42:19 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T13:42:19.548Z] [SUCCESS] user=admin id=2 app_time=20:42:19 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-09T13:42:21.652Z] [SUCCESS] user=admin id=3 app_time=20:42:21 Random Pick: 04 25 29 40 51 53 tại #10,822,295.
+[2026-07-09T13:42:26.641Z] [SUCCESS] user=admin id=4 app_time=20:42:26 Calculated Pick: 02 04 06 07 37 50 tại #3,453,804 | score 0.4170 | base 0.4170 | diversity penalty 0.0000 | avg number freq 131.50 | avg pair freq 11.40 | 12,344 candidates.
+[2026-07-09T13:42:32.037Z] [SUCCESS] user=admin id=5 app_time=20:42:32 Calculated Pick: 01 15 19 35 36 52 tại #2,444,282 | score 0.3876 | base 0.3876 | diversity penalty 0.0000 | avg number freq 143.17 | avg pair freq 11.00 | 12,341 candidates.
+[2026-07-13T19:07:44.715Z] [SUCCESS] user=admin id=1 app_time=02:07:44 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-13T19:07:44.720Z] [SUCCESS] user=admin id=2 app_time=02:07:44 Auto-loaded data/power655.jsonl: 1,369 bộ hợp lệ.
+[2026-07-13T19:10:16.948Z] [SUCCESS] user=admin id=1 app_time=02:10:16 Auto-loaded data/power655.jsonl: 1,370 bộ hợp lệ.
+[2026-07-13T19:10:16.963Z] [SUCCESS] user=admin id=2 app_time=02:10:16 Auto-loaded data/power655.jsonl: 1,370 bộ hợp lệ.
+[2026-07-13T19:10:24.038Z] [SUCCESS] user=admin id=1 app_time=02:10:24 Auto-loaded data/power655.jsonl: 1,370 bộ hợp lệ.
+[2026-07-13T19:10:24.044Z] [SUCCESS] user=admin id=2 app_time=02:10:24 Auto-loaded data/power655.jsonl: 1,370 bộ hợp lệ.

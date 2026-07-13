@@ -4,9 +4,16 @@ export type CalculatedPickResult = {
   numbers: number[];
   index: number;
   score: number;
+  baseScore: number;
+  diversityPenalty: number;
   candidateCount: number;
   averageNumberFrequency: number;
   averagePairFrequency: number;
+};
+
+export type CalculatedPickOptions = {
+  diversityMemory?: number[][];
+  diversityPenaltyWeight?: number;
 };
 
 type HistoryStats = {
@@ -16,7 +23,8 @@ type HistoryStats = {
   maxPairFrequency: number;
 };
 
-const DEFAULT_CANDIDATE_COUNT = 7_777;
+const DEFAULT_CANDIDATE_COUNT = 12_345;
+const DEFAULT_DIVERSITY_PENALTY_WEIGHT = 0.18;
 
 function pairKey(a: number, b: number) {
   return `${a}:${b}`;
@@ -75,13 +83,28 @@ function scoreCombination(numbers: number[], stats: HistoryStats) {
   };
 }
 
-export function calculatedPick(importedIndexes: Set<number>, candidateCount = DEFAULT_CANDIDATE_COUNT): CalculatedPickResult {
+function calculateDiversityPenalty(numbers: number[], memory: number[][], weight: number) {
+  if (memory.length === 0 || weight <= 0) return 0;
+  const candidate = new Set(numbers);
+  const maxOverlap = Math.max(
+    ...memory.map((previousPick) => previousPick.filter((number) => candidate.has(number)).length),
+  );
+  return (maxOverlap / PICK_COUNT) * weight;
+}
+
+export function calculatedPick(
+  importedIndexes: Set<number>,
+  candidateCount = DEFAULT_CANDIDATE_COUNT,
+  options: CalculatedPickOptions = {},
+): CalculatedPickResult {
   if (importedIndexes.size === 0) {
     const numbers = randomCombination();
     return {
       numbers,
       index: combinationToIndex(numbers),
       score: 0,
+      baseScore: 0,
+      diversityPenalty: 0,
       candidateCount: 1,
       averageNumberFrequency: 0,
       averagePairFrequency: 0,
@@ -89,9 +112,13 @@ export function calculatedPick(importedIndexes: Set<number>, candidateCount = DE
   }
 
   const stats = buildHistoryStats(importedIndexes);
+  const diversityMemory = options.diversityMemory ?? [];
+  const diversityPenaltyWeight = options.diversityPenaltyWeight ?? DEFAULT_DIVERSITY_PENALTY_WEIGHT;
   let bestNumbers = randomCombination();
   let bestIndex = combinationToIndex(bestNumbers);
   let bestScore = Number.NEGATIVE_INFINITY;
+  let bestBaseScore = Number.NEGATIVE_INFINITY;
+  let bestDiversityPenalty = 0;
   let bestAverageNumberFrequency = 0;
   let bestAveragePairFrequency = 0;
   const seenCandidates = new Set<number>();
@@ -103,10 +130,14 @@ export function calculatedPick(importedIndexes: Set<number>, candidateCount = DE
     seenCandidates.add(index);
 
     const result = scoreCombination(numbers, stats);
-    if (result.score > bestScore) {
+    const diversityPenalty = calculateDiversityPenalty(numbers, diversityMemory, diversityPenaltyWeight);
+    const finalScore = result.score - diversityPenalty;
+    if (finalScore > bestScore) {
       bestNumbers = numbers;
       bestIndex = index;
-      bestScore = result.score;
+      bestScore = finalScore;
+      bestBaseScore = result.score;
+      bestDiversityPenalty = diversityPenalty;
       bestAverageNumberFrequency = result.averageNumberFrequency;
       bestAveragePairFrequency = result.averagePairFrequency;
     }
@@ -116,6 +147,8 @@ export function calculatedPick(importedIndexes: Set<number>, candidateCount = DE
     numbers: bestNumbers,
     index: bestIndex,
     score: bestScore,
+    baseScore: bestBaseScore,
+    diversityPenalty: bestDiversityPenalty,
     candidateCount: seenCandidates.size,
     averageNumberFrequency: bestAverageNumberFrequency,
     averagePairFrequency: bestAveragePairFrequency,
