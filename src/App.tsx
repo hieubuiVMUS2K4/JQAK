@@ -21,6 +21,7 @@ import {
 import { calculatedPick } from "./utils/calculatedPick";
 import { parseImportedText } from "./utils/importers";
 import { runRandomStatisticalTest, runReplayBacktest, summarizeReplayResult } from "./utils/replayBacktest";
+import power535Data from "../data/power535.jsonl?raw";
 import power645Data from "../data/power645.jsonl?raw";
 import power655Data from "../data/power655.jsonl?raw";
 
@@ -31,6 +32,7 @@ const CALCULATED_PICK_MEMORY_SIZE = 12;
 const PRODUCT_DATA: Record<LotteryProductId, string> = {
   power655: power655Data,
   power645: power645Data,
+  power535: power535Data,
 };
 
 let logId = 0;
@@ -169,7 +171,7 @@ function App() {
   function handleSearch(value: string) {
     const numbers = normalizeCombination(parseCombinationInput(value));
     if (!validateCombination(numbers, currentProduct)) {
-      addLog("error", `Search lỗi: "${value}" không phải bộ 6 số hợp lệ.`);
+      addLog("error", `Search lỗi: "${value}" không phải bộ ${currentProduct.pickCount} số hợp lệ cho ${currentProduct.label}.`);
       return;
     }
     const index = combinationToIndex(numbers, currentProduct);
@@ -237,7 +239,7 @@ function App() {
         const summary = summarizeReplayResult(result, testedDraws);
         addLog(
           result.name === "Your Algorithm" ? "success" : "info",
-          `${result.name}: avg=${summary.avgMatches.toFixed(3)} | 3=${summary.hits3} | 4=${summary.hits4} | 5=${summary.hits5} | 6=${summary.hits6} | best=${result.bestMatch} | ROI=${summary.roi.toFixed(2)}% | dist [${result.distribution.map((count, matches) => `${matches}:${count}`).join(" ")}].`,
+          `${result.name}: avg=${summary.avgMatches.toFixed(3)} | 3=${summary.hits3 ?? 0} | 4=${summary.hits4 ?? 0} | 5=${summary.hits5 ?? 0} | exact=${summary.exactHits} | best=${result.bestMatch} | ROI=${summary.roi.toFixed(2)}% | dist [${result.distribution.map((count, matches) => `${matches}:${count}`).join(" ")}].`,
         );
       }
 
@@ -248,7 +250,7 @@ function App() {
         const randomSummary = summarizeReplayResult(randomResult, testedDraws);
         addLog(
           yourSummary.avgMatches > randomSummary.avgMatches ? "success" : "warn",
-          `Your vs Random: avg delta=${(yourSummary.avgMatches - randomSummary.avgMatches).toFixed(3)}, 3+ hits delta=${(yourSummary.hits3 + yourSummary.hits4 + yourSummary.hits5 + yourSummary.hits6) - (randomSummary.hits3 + randomSummary.hits4 + randomSummary.hits5 + randomSummary.hits6)}.`,
+          `Your vs Random: avg delta=${(yourSummary.avgMatches - randomSummary.avgMatches).toFixed(3)}, 3+ hits delta=${((yourSummary.hits3 ?? 0) + (yourSummary.hits4 ?? 0) + (yourSummary.hits5 ?? 0) + yourSummary.exactHits) - ((randomSummary.hits3 ?? 0) + (randomSummary.hits4 ?? 0) + (randomSummary.hits5 ?? 0) + randomSummary.exactHits)}.`,
         );
       }
 

@@ -81,11 +81,13 @@ button.primary {
 }
 
 .product-selector {
+  position: relative;
   display: grid;
-  grid-template-columns: auto auto;
+  grid-template-columns: auto minmax(116px, 1fr);
   align-items: center;
   gap: 8px;
   min-height: 40px;
+  min-width: 220px;
   border: 1px solid #2d3540;
   border-radius: 8px;
   background: #11151a;
@@ -94,11 +96,66 @@ button.primary {
   font-size: 13px;
 }
 
-.product-selector select {
+.product-selector-label {
+  color: #9fb0c4;
+}
+
+.product-select-button {
+  min-height: 30px;
+  justify-content: space-between;
+  gap: 8px;
   border: 0;
-  outline: 0;
   background: transparent;
   color: #f1f5fa;
+  padding: 0 2px;
+}
+
+.product-select-button:hover {
+  border-color: transparent;
+  background: transparent;
+  color: #ffffff;
+}
+
+.product-select-button svg {
+  flex: 0 0 auto;
+  color: #d4e2f4;
+}
+
+.product-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 90;
+  display: grid;
+  gap: 3px;
+  border: 1px solid #324154;
+  border-radius: 8px;
+  background: #0b1016;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.42);
+  padding: 5px;
+}
+
+.product-option {
+  width: 100%;
+  min-height: 34px;
+  justify-content: flex-start;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: #dce7f5;
+  padding: 0 10px;
+  text-align: left;
+}
+
+.product-option:hover {
+  background: #182331;
+  color: #ffffff;
+}
+
+.product-option.active {
+  background: #123b5f;
+  color: #ffffff;
 }
 
 .eyebrow {

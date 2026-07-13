@@ -1,4 +1,4 @@
-export type LotteryProductId = "power655" | "power645";
+export type LotteryProductId = "power655" | "power645" | "power535";
 
 export type LotteryProductConfig = {
   id: LotteryProductId;
@@ -40,6 +40,20 @@ export const PRODUCT_CONFIGS: Record<LotteryProductId, LotteryProductConfig> = {
       4: 300_000,
       5: 10_000_000,
       6: 12_000_000_000,
+    },
+  },
+  power535: {
+    id: "power535",
+    label: "Power 5/35",
+    shortLabel: "5/35",
+    maxNumber: 35,
+    pickCount: 5,
+    totalCombinations: 324_632,
+    dataFileName: "power535.jsonl",
+    prizeByMatch: {
+      3: 30_000,
+      4: 500_000,
+      5: 10_000_000_000,
     },
   },
 };

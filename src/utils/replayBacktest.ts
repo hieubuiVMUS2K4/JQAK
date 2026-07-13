@@ -301,7 +301,7 @@ export function summarizeReplayResult(result: ReplayStrategyResult, testedDraws:
     hits3: result.distribution[3],
     hits4: result.distribution[4],
     hits5: result.distribution[5],
-    hits6: result.distribution[6],
+    exactHits: result.exactHits,
     roi: totalCost > 0 ? (profit / totalCost) * 100 : 0,
   };
 }
