@@ -1,6 +1,7 @@
 import type { ImportedCombination } from "../types";
+import type { LotteryProductConfig } from "../config/products";
 import { calculatedPick } from "./calculatedPick";
-import { combinationToIndex, MAX_NUMBER, normalizeCombination, PICK_COUNT, randomCombination } from "./combinations";
+import { combinationToIndex, normalizeCombination, randomCombination } from "./combinations";
 
 export type ReplayStrategyName =
   | "Random"
@@ -77,13 +78,6 @@ export const REPLAY_STRATEGIES: ReplayStrategyName[] = [
   "Your Algorithm",
 ];
 
-const PRIZE_BY_MATCH: Record<number, number> = {
-  3: 50_000,
-  4: 500_000,
-  5: 5_000_000_000,
-  6: 40_000_000_000,
-};
-
 function key2(a: number, b: number) {
   return a < b ? `${a}:${b}` : `${b}:${a}`;
 }
@@ -92,10 +86,10 @@ function key3(a: number, b: number, c: number) {
   return [a, b, c].sort((x, y) => x - y).join(":");
 }
 
-function emptyResult(name: ReplayStrategyName): ReplayStrategyResult {
+function emptyResult(name: ReplayStrategyName, config: LotteryProductConfig): ReplayStrategyResult {
   return {
     name,
-    distribution: Array.from({ length: PICK_COUNT + 1 }, () => 0),
+    distribution: Array.from({ length: config.pickCount + 1 }, () => 0),
     totalMatches: 0,
     exactHits: 0,
     bestMatch: -1,
@@ -104,9 +98,9 @@ function emptyResult(name: ReplayStrategyName): ReplayStrategyResult {
   };
 }
 
-function buildStats(history: ImportedCombination[]): HistoryStats {
-  const numberFrequency = Array.from({ length: MAX_NUMBER + 1 }, () => 0);
-  const lastSeen = Array.from({ length: MAX_NUMBER + 1 }, () => -1);
+function buildStats(history: ImportedCombination[], config: LotteryProductConfig): HistoryStats {
+  const numberFrequency = Array.from({ length: config.maxNumber + 1 }, () => 0);
+  const lastSeen = Array.from({ length: config.maxNumber + 1 }, () => -1);
   const pairFrequency = new Map<string, number>();
   const tripleFrequency = new Map<string, number>();
 
@@ -132,11 +126,11 @@ function buildStats(history: ImportedCombination[]): HistoryStats {
   return { numberFrequency, lastSeen, pairFrequency, tripleFrequency };
 }
 
-function pickByScore(score: (number: number, selected: number[]) => number): number[] {
+function pickByScore(config: LotteryProductConfig, score: (number: number, selected: number[]) => number): number[] {
   const selected: number[] = [];
-  const available = Array.from({ length: MAX_NUMBER }, (_, index) => index + 1);
+  const available = Array.from({ length: config.maxNumber }, (_, index) => index + 1);
 
-  while (selected.length < PICK_COUNT) {
+  while (selected.length < config.pickCount) {
     let bestNumber = available[0];
     let bestScore = Number.NEGATIVE_INFINITY;
     for (const number of available) {
@@ -153,11 +147,11 @@ function pickByScore(score: (number: number, selected: number[]) => number): num
   return normalizeCombination(selected);
 }
 
-function weightedFrequencyPick(stats: HistoryStats): number[] {
+function weightedFrequencyPick(stats: HistoryStats, config: LotteryProductConfig): number[] {
   const selected: number[] = [];
-  const available = Array.from({ length: MAX_NUMBER }, (_, index) => index + 1);
+  const available = Array.from({ length: config.maxNumber }, (_, index) => index + 1);
 
-  while (selected.length < PICK_COUNT) {
+  while (selected.length < config.pickCount) {
     const totalWeight = available.reduce((sum, number) => sum + stats.numberFrequency[number] + 1, 0);
     let ticket = Math.random() * totalWeight;
     let chosen = available[0];
@@ -175,28 +169,33 @@ function weightedFrequencyPick(stats: HistoryStats): number[] {
   return normalizeCombination(selected);
 }
 
-function pickForStrategy(name: ReplayStrategyName, history: ImportedCombination[], historyIndexes: Set<number>): number[] {
-  if (history.length === 0 || name === "Random") return randomCombination();
+function pickForStrategy(
+  name: ReplayStrategyName,
+  history: ImportedCombination[],
+  historyIndexes: Set<number>,
+  config: LotteryProductConfig,
+): number[] {
+  if (history.length === 0 || name === "Random") return randomCombination(config);
 
-  const stats = buildStats(history);
+  const stats = buildStats(history, config);
 
-  if (name === "Frequency Weighted") return weightedFrequencyPick(stats);
+  if (name === "Frequency Weighted") return weightedFrequencyPick(stats, config);
 
   if (name === "Hot Numbers") {
-    return pickByScore((number) => stats.numberFrequency[number]);
+    return pickByScore(config, (number) => stats.numberFrequency[number]);
   }
 
   if (name === "Cold Numbers") {
     const maxFrequency = Math.max(...stats.numberFrequency);
-    return pickByScore((number) => maxFrequency - stats.numberFrequency[number]);
+    return pickByScore(config, (number) => maxFrequency - stats.numberFrequency[number]);
   }
 
   if (name === "Delay") {
-    return pickByScore((number) => (stats.lastSeen[number] === -1 ? history.length + 1 : history.length - stats.lastSeen[number]));
+    return pickByScore(config, (number) => (stats.lastSeen[number] === -1 ? history.length + 1 : history.length - stats.lastSeen[number]));
   }
 
   if (name === "Pair Frequency") {
-    return pickByScore((number, selected) => {
+    return pickByScore(config, (number, selected) => {
       if (selected.length === 0) return stats.numberFrequency[number] + 1;
       const pairScore = selected.reduce((sum, picked) => sum + (stats.pairFrequency.get(key2(number, picked)) ?? 0), 0);
       return pairScore / selected.length + 0.05 * stats.numberFrequency[number];
@@ -204,7 +203,7 @@ function pickForStrategy(name: ReplayStrategyName, history: ImportedCombination[
   }
 
   if (name === "Triple Frequency") {
-    return pickByScore((number, selected) => {
+    return pickByScore(config, (number, selected) => {
       let tripleScore = 0;
       let tripleCount = 0;
       for (let i = 0; i < selected.length; i += 1) {
@@ -218,7 +217,7 @@ function pickForStrategy(name: ReplayStrategyName, history: ImportedCombination[
     });
   }
 
-  return calculatedPick(historyIndexes, 5_000).numbers;
+  return calculatedPick(historyIndexes, config, 5_000).numbers;
 }
 
 function mean(values: number[]) {
@@ -239,20 +238,21 @@ function oneSidedPValue(values: number[], observed: number) {
   return (values.filter((value) => value >= observed).length + 1) / (values.length + 1);
 }
 
-function evaluatePick(picked: number[], actual: number[]) {
+function evaluatePick(picked: number[], actual: number[], config: LotteryProductConfig) {
   const matches = picked.filter((number) => actual.includes(number)).length;
   return {
     matches,
-    revenue: PRIZE_BY_MATCH[matches] ?? 0,
+    revenue: config.prizeByMatch[matches] ?? 0,
   };
 }
 
 export async function runReplayBacktest(
   history: ImportedCombination[],
+  config: LotteryProductConfig,
   onProgress?: (progress: ReplayProgress) => void,
 ): Promise<ReplayStrategyResult[]> {
   const results = new Map<ReplayStrategyName, ReplayStrategyResult>(
-    REPLAY_STRATEGIES.map((name) => [name, emptyResult(name)]),
+    REPLAY_STRATEGIES.map((name) => [name, emptyResult(name, config)]),
   );
   const trainingHistory: ImportedCombination[] = [history[0]];
   const trainingIndexes = new Set<number>([history[0].index]);
@@ -261,15 +261,15 @@ export async function runReplayBacktest(
     const actual = history[drawIndex];
 
     for (const strategyName of REPLAY_STRATEGIES) {
-      const picked = pickForStrategy(strategyName, trainingHistory, trainingIndexes);
-      const pickedIndex = combinationToIndex(picked);
+      const picked = pickForStrategy(strategyName, trainingHistory, trainingIndexes, config);
+      const pickedIndex = combinationToIndex(picked, config);
       const matches = picked.filter((number) => actual.numbers.includes(number)).length;
       const result = results.get(strategyName)!;
 
       result.distribution[matches] += 1;
       result.totalMatches += matches;
-      result.totalRevenue += PRIZE_BY_MATCH[matches] ?? 0;
-      if (matches === PICK_COUNT) result.exactHits += 1;
+      result.totalRevenue += config.prizeByMatch[matches] ?? 0;
+      if (matches === config.pickCount) result.exactHits += 1;
       if (matches > result.bestMatch) {
         result.bestMatch = matches;
         result.bestPrediction = {
@@ -308,6 +308,7 @@ export function summarizeReplayResult(result: ReplayStrategyResult, testedDraws:
 
 export async function runRandomStatisticalTest(
   history: ImportedCombination[],
+  config: LotteryProductConfig,
   randomRuns = 500,
   onProgress?: (drawIndex: number, totalDraws: number) => void,
 ): Promise<StatisticalTestResult> {
@@ -315,7 +316,7 @@ export async function runRandomStatisticalTest(
   const totalCost = testedDraws * 10_000;
   const trainingHistory: ImportedCombination[] = [history[0]];
   const trainingIndexes = new Set<number>([history[0].index]);
-  const yourDistribution = Array.from({ length: PICK_COUNT + 1 }, () => 0);
+  const yourDistribution = Array.from({ length: config.pickCount + 1 }, () => 0);
   const randomTotalMatches = Array.from({ length: randomRuns }, () => 0);
   const randomHits3Plus = Array.from({ length: randomRuns }, () => 0);
   const randomRevenue = Array.from({ length: randomRuns }, () => 0);
@@ -325,15 +326,15 @@ export async function runRandomStatisticalTest(
 
   for (let drawIndex = 1; drawIndex < history.length; drawIndex += 1) {
     const actual = history[drawIndex];
-    const yourPick = pickForStrategy("Your Algorithm", trainingHistory, trainingIndexes);
-    const yourEval = evaluatePick(yourPick, actual.numbers);
+    const yourPick = pickForStrategy("Your Algorithm", trainingHistory, trainingIndexes, config);
+    const yourEval = evaluatePick(yourPick, actual.numbers, config);
     yourDistribution[yourEval.matches] += 1;
     yourTotalMatches += yourEval.matches;
     yourRevenue += yourEval.revenue;
     if (yourEval.matches >= 3) yourHits3Plus += 1;
 
     for (let run = 0; run < randomRuns; run += 1) {
-      const randomEval = evaluatePick(randomCombination(), actual.numbers);
+      const randomEval = evaluatePick(randomCombination(config), actual.numbers, config);
       randomTotalMatches[run] += randomEval.matches;
       randomRevenue[run] += randomEval.revenue;
       if (randomEval.matches >= 3) randomHits3Plus[run] += 1;

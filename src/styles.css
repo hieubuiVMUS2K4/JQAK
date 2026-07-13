@@ -75,9 +75,30 @@ button.primary {
 
 .header-actions {
   display: grid;
-  grid-template-columns: minmax(360px, 1fr) auto;
+  grid-template-columns: auto minmax(320px, 1fr) auto;
   align-items: center;
   gap: 8px;
+}
+
+.product-selector {
+  display: grid;
+  grid-template-columns: auto auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  border: 1px solid #2d3540;
+  border-radius: 8px;
+  background: #11151a;
+  color: #aab4c2;
+  padding: 0 10px;
+  font-size: 13px;
+}
+
+.product-selector select {
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #f1f5fa;
 }
 
 .eyebrow {

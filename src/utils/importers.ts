@@ -1,4 +1,5 @@
 import { combinationToIndex, normalizeCombination, validateCombination } from "./combinations";
+import type { LotteryProductConfig } from "../config/products";
 import type { ImportedCombination } from "../types";
 
 type ImportResult = {
@@ -6,19 +7,19 @@ type ImportResult = {
   errors: string[];
 };
 
-function buildImported(numbers: number[], source: string): ImportedCombination | string {
+function buildImported(numbers: number[], source: string, config: LotteryProductConfig): ImportedCombination | string {
   const normalized = normalizeCombination(numbers);
-  if (!validateCombination(normalized)) {
+  if (!validateCombination(normalized, config)) {
     return `${source}: bộ số không hợp lệ (${numbers.join(", ")})`;
   }
   return {
-    index: combinationToIndex(normalized),
+    index: combinationToIndex(normalized, config),
     numbers: normalized,
     source,
   };
 }
 
-export function parseCSV(text: string): ImportResult {
+export function parseCSV(text: string, config: LotteryProductConfig): ImportResult {
   const combinations: ImportedCombination[] = [];
   const errors: string[] = [];
   const lines = text.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
@@ -29,13 +30,16 @@ export function parseCSV(text: string): ImportResult {
     if (isHeader) return;
 
     const numericColumns = columns.map((column) => Number(column));
-    const numbers = numericColumns.length >= 7 ? numericColumns.slice(1, 7) : numericColumns.slice(0, 6);
+    const numbers =
+      numericColumns.length >= config.pickCount + 1
+        ? numericColumns.slice(1, config.pickCount + 1)
+        : numericColumns.slice(0, config.pickCount);
     if (numbers.some((number) => !Number.isFinite(number))) {
       errors.push(`CSV dòng ${lineIndex + 1}: không đọc được số.`);
       return;
     }
 
-    const imported = buildImported(numbers, `CSV dòng ${lineIndex + 1}`);
+    const imported = buildImported(numbers, `CSV dòng ${lineIndex + 1}`, config);
     if (typeof imported === "string") {
       errors.push(imported);
       return;
@@ -46,7 +50,7 @@ export function parseCSV(text: string): ImportResult {
   return { combinations, errors };
 }
 
-export function parseJSON(text: string): ImportResult {
+export function parseJSON(text: string, config: LotteryProductConfig): ImportResult {
   const combinations: ImportedCombination[] = [];
   const errors: string[] = [];
   const trimmed = text.trim();
@@ -70,11 +74,11 @@ export function parseJSON(text: string): ImportResult {
   records.forEach((record, recordIndex) => {
     let numbers: number[] | undefined;
     if (Array.isArray(record)) {
-      numbers = record.map((value) => Number(value)).slice(0, 6);
+      numbers = record.map((value) => Number(value)).slice(0, config.pickCount);
     } else if (record && typeof record === "object") {
       const value = (record as { result?: unknown; numbers?: unknown }).result ?? (record as { numbers?: unknown }).numbers;
       if (Array.isArray(value)) {
-        numbers = value.map((entry) => Number(entry)).slice(0, 6);
+        numbers = value.map((entry) => Number(entry)).slice(0, config.pickCount);
       }
     }
 
@@ -83,7 +87,7 @@ export function parseJSON(text: string): ImportResult {
       return;
     }
 
-    const imported = buildImported(numbers, `JSON bản ghi ${recordIndex + 1}`);
+    const imported = buildImported(numbers, `JSON bản ghi ${recordIndex + 1}`, config);
     if (typeof imported === "string") {
       errors.push(imported);
       return;
@@ -94,12 +98,12 @@ export function parseJSON(text: string): ImportResult {
   return { combinations, errors };
 }
 
-export function parseImportedText(text: string, fileName: string): ImportResult {
+export function parseImportedText(text: string, fileName: string, config: LotteryProductConfig): ImportResult {
   const lowerName = fileName.toLowerCase();
-  if (lowerName.endsWith(".csv")) return parseCSV(text);
-  if (lowerName.endsWith(".json") || lowerName.endsWith(".jsonl")) return parseJSON(text);
+  if (lowerName.endsWith(".csv")) return parseCSV(text, config);
+  if (lowerName.endsWith(".json") || lowerName.endsWith(".jsonl")) return parseJSON(text, config);
 
-  const csvResult = parseCSV(text);
+  const csvResult = parseCSV(text, config);
   if (csvResult.combinations.length > 0) return csvResult;
-  return parseJSON(text);
+  return parseJSON(text, config);
 }

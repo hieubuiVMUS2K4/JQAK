@@ -1,4 +1,5 @@
-import { combinationToIndex, indexToCombination, MAX_NUMBER, PICK_COUNT, randomCombination } from "./combinations";
+import type { LotteryProductConfig } from "../config/products";
+import { combinationToIndex, indexToCombination, randomCombination } from "./combinations";
 
 export type CalculatedPickResult = {
   numbers: number[];
@@ -30,12 +31,12 @@ function pairKey(a: number, b: number) {
   return `${a}:${b}`;
 }
 
-function buildHistoryStats(importedIndexes: Set<number>): HistoryStats {
-  const numberFrequency = Array.from({ length: MAX_NUMBER + 1 }, () => 0);
+function buildHistoryStats(importedIndexes: Set<number>, config: LotteryProductConfig): HistoryStats {
+  const numberFrequency = Array.from({ length: config.maxNumber + 1 }, () => 0);
   const pairFrequency = new Map<string, number>();
 
   for (const index of importedIndexes) {
-    const numbers = indexToCombination(index);
+    const numbers = indexToCombination(index, config);
     for (const number of numbers) {
       numberFrequency[number] += 1;
     }
@@ -55,7 +56,7 @@ function buildHistoryStats(importedIndexes: Set<number>): HistoryStats {
   };
 }
 
-function scoreCombination(numbers: number[], stats: HistoryStats) {
+function scoreCombination(numbers: number[], stats: HistoryStats, config: LotteryProductConfig) {
   let numberFrequencyTotal = 0;
   for (const number of numbers) {
     numberFrequencyTotal += stats.numberFrequency[number];
@@ -70,11 +71,11 @@ function scoreCombination(numbers: number[], stats: HistoryStats) {
     }
   }
 
-  const averageNumberFrequency = numberFrequencyTotal / PICK_COUNT;
+  const averageNumberFrequency = numberFrequencyTotal / config.pickCount;
   const averagePairFrequency = pairFrequencyTotal / pairCount;
   const coldNumberScore = 1 - averageNumberFrequency / stats.maxNumberFrequency;
   const lowPairScore = 1 - averagePairFrequency / stats.maxPairFrequency;
-  const spreadScore = (numbers[numbers.length - 1] - numbers[0]) / (MAX_NUMBER - 1);
+  const spreadScore = (numbers[numbers.length - 1] - numbers[0]) / (config.maxNumber - 1);
 
   return {
     score: coldNumberScore * 0.58 + lowPairScore * 0.34 + spreadScore * 0.08 + Math.random() * 0.0001,
@@ -83,25 +84,26 @@ function scoreCombination(numbers: number[], stats: HistoryStats) {
   };
 }
 
-function calculateDiversityPenalty(numbers: number[], memory: number[][], weight: number) {
+function calculateDiversityPenalty(numbers: number[], memory: number[][], weight: number, config: LotteryProductConfig) {
   if (memory.length === 0 || weight <= 0) return 0;
   const candidate = new Set(numbers);
   const maxOverlap = Math.max(
     ...memory.map((previousPick) => previousPick.filter((number) => candidate.has(number)).length),
   );
-  return (maxOverlap / PICK_COUNT) * weight;
+  return (maxOverlap / config.pickCount) * weight;
 }
 
 export function calculatedPick(
   importedIndexes: Set<number>,
+  config: LotteryProductConfig,
   candidateCount = DEFAULT_CANDIDATE_COUNT,
   options: CalculatedPickOptions = {},
 ): CalculatedPickResult {
   if (importedIndexes.size === 0) {
-    const numbers = randomCombination();
+    const numbers = randomCombination(config);
     return {
       numbers,
-      index: combinationToIndex(numbers),
+      index: combinationToIndex(numbers, config),
       score: 0,
       baseScore: 0,
       diversityPenalty: 0,
@@ -111,11 +113,11 @@ export function calculatedPick(
     };
   }
 
-  const stats = buildHistoryStats(importedIndexes);
+  const stats = buildHistoryStats(importedIndexes, config);
   const diversityMemory = options.diversityMemory ?? [];
   const diversityPenaltyWeight = options.diversityPenaltyWeight ?? DEFAULT_DIVERSITY_PENALTY_WEIGHT;
-  let bestNumbers = randomCombination();
-  let bestIndex = combinationToIndex(bestNumbers);
+  let bestNumbers = randomCombination(config);
+  let bestIndex = combinationToIndex(bestNumbers, config);
   let bestScore = Number.NEGATIVE_INFINITY;
   let bestBaseScore = Number.NEGATIVE_INFINITY;
   let bestDiversityPenalty = 0;
@@ -124,13 +126,13 @@ export function calculatedPick(
   const seenCandidates = new Set<number>();
 
   for (let i = 0; i < candidateCount; i += 1) {
-    const numbers = randomCombination();
-    const index = combinationToIndex(numbers);
+    const numbers = randomCombination(config);
+    const index = combinationToIndex(numbers, config);
     if (seenCandidates.has(index) || importedIndexes.has(index)) continue;
     seenCandidates.add(index);
 
-    const result = scoreCombination(numbers, stats);
-    const diversityPenalty = calculateDiversityPenalty(numbers, diversityMemory, diversityPenaltyWeight);
+    const result = scoreCombination(numbers, stats, config);
+    const diversityPenalty = calculateDiversityPenalty(numbers, diversityMemory, diversityPenaltyWeight, config);
     const finalScore = result.score - diversityPenalty;
     if (finalScore > bestScore) {
       bestNumbers = numbers;

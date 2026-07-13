@@ -1,19 +1,20 @@
-import { TOTAL_COMBINATIONS } from "../utils/combinations";
+import type { LotteryProductConfig } from "../config/products";
 
 type StatsPanelProps = {
+  product: LotteryProductConfig;
   importedCount: number;
   selectedCount: number;
 };
 
-export function StatsPanel({ importedCount, selectedCount }: StatsPanelProps) {
-  const coverage = (importedCount / TOTAL_COMBINATIONS) * 100;
+export function StatsPanel({ product, importedCount, selectedCount }: StatsPanelProps) {
+  const coverage = (importedCount / product.totalCombinations) * 100;
 
   return (
     <section className="panel stats-panel">
       <h2>Thống kê</h2>
       <div className="stat-row">
         <span>Tổng tổ hợp</span>
-        <strong>{TOTAL_COMBINATIONS.toLocaleString("en-US")}</strong>
+        <strong>{product.totalCombinations.toLocaleString("en-US")}</strong>
       </div>
       <div className="stat-row">
         <span>Đã xuất hiện</span>

@@ -3,9 +3,11 @@ import { CombinationGrid } from "./components/CombinationGrid";
 import { ImportPanel } from "./components/ImportPanel";
 import { LoginPage } from "./components/LoginPage";
 import { LogPanel } from "./components/LogPanel";
+import { ProductSelector } from "./components/ProductSelector";
 import { SearchBox } from "./components/SearchBox";
 import { StatsPanel } from "./components/StatsPanel";
 import { Toolbar } from "./components/Toolbar";
+import { DEFAULT_PRODUCT_ID, PRODUCT_CONFIGS, type LotteryProductId } from "./config/products";
 import type { GridMode, ImportedCombination, LogEntry, SelectedCombination } from "./types";
 import {
   combinationToIndex,
@@ -19,11 +21,17 @@ import {
 import { calculatedPick } from "./utils/calculatedPick";
 import { parseImportedText } from "./utils/importers";
 import { runRandomStatisticalTest, runReplayBacktest, summarizeReplayResult } from "./utils/replayBacktest";
-import defaultPower655Data from "../data/power655.jsonl?raw";
+import power645Data from "../data/power645.jsonl?raw";
+import power655Data from "../data/power655.jsonl?raw";
 
 const LOG_SERVER_URL = "http://127.0.0.1:8787/logs";
 const RANDOM_STAT_TEST_RUNS = 500;
 const CALCULATED_PICK_MEMORY_SIZE = 12;
+
+const PRODUCT_DATA: Record<LotteryProductId, string> = {
+  power655: power655Data,
+  power645: power645Data,
+};
 
 let logId = 0;
 
@@ -54,6 +62,7 @@ function persistLog(entry: LogEntry & { user: string }) {
 function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [currentUser, setCurrentUser] = useState<string | null>(() => localStorage.getItem("power655_user"));
+  const [currentProductId, setCurrentProductId] = useState<LotteryProductId>(DEFAULT_PRODUCT_ID);
   const [importedIndexes, setImportedIndexes] = useState<Set<number>>(() => new Set());
   const [importedHistory, setImportedHistory] = useState<ImportedCombination[]>([]);
   const [selected, setSelected] = useState<Map<number, SelectedCombination>>(() => new Map());
@@ -66,6 +75,7 @@ function App() {
   const [isStatTesting, setIsStatTesting] = useState(false);
   const [recentCalculatedPicks, setRecentCalculatedPicks] = useState<number[][]>([]);
 
+  const currentProduct = PRODUCT_CONFIGS[currentProductId];
   const selectedIndexes = useMemo(() => new Set(selected.keys()), [selected]);
 
   function addLog(level: LogEntry["level"], message: string) {
@@ -86,18 +96,22 @@ function App() {
 
   useEffect(() => {
     try {
-      const result = parseImportedText(defaultPower655Data, "power655.jsonl");
+      const result = parseImportedText(PRODUCT_DATA[currentProductId], currentProduct.dataFileName, currentProduct);
       setImportedIndexes(new Set(result.combinations.map((item) => item.index)));
       setImportedHistory(result.combinations);
-      addLog("success", `Auto-loaded data/power655.jsonl: ${result.combinations.length.toLocaleString("en-US")} bộ hợp lệ.`);
+      setSelected(new Map());
+      setRandomIndex(null);
+      setRecentCalculatedPicks([]);
+      setFocusRequest({ index: 0, id: Date.now() + Math.random() });
+      addLog("success", `Auto-loaded data/${currentProduct.dataFileName} for ${currentProduct.label}: ${result.combinations.length.toLocaleString("en-US")} bộ hợp lệ.`);
       if (result.errors.length > 0) {
         result.errors.slice(0, 8).forEach((error) => addLog("warn", error));
         if (result.errors.length > 8) addLog("warn", `Auto-load còn ${result.errors.length - 8} lỗi khác đã rút gọn.`);
       }
     } catch (error) {
-      addLog("error", `Auto-load data/power655.jsonl thất bại: ${error instanceof Error ? error.message : "không đọc được dữ liệu"}.`);
+      addLog("error", `Auto-load data/${currentProduct.dataFileName} thất bại: ${error instanceof Error ? error.message : "không đọc được dữ liệu"}.`);
     }
-  }, []);
+  }, [currentProduct, currentProductId]);
 
   function focusCell(index: number, nextZoom = Math.max(zoom, 3.2)) {
     setZoom(Math.min(10, Math.max(0.55, nextZoom)));
@@ -115,7 +129,7 @@ function App() {
 
     try {
       const text = await file.text();
-      const result = parseImportedText(text, file.name);
+      const result = parseImportedText(text, file.name, currentProduct);
       setImportedIndexes((current) => {
         const next = new Set(current);
         result.combinations.forEach((item) => next.add(item.index));
@@ -138,7 +152,7 @@ function App() {
   }
 
   function handleSelect(index: number) {
-    const numbers = indexToCombination(index);
+    const numbers = indexToCombination(index, currentProduct);
     setSelected((current) => {
       const next = new Map(current);
       if (next.has(index)) {
@@ -154,18 +168,18 @@ function App() {
 
   function handleSearch(value: string) {
     const numbers = normalizeCombination(parseCombinationInput(value));
-    if (!validateCombination(numbers)) {
+    if (!validateCombination(numbers, currentProduct)) {
       addLog("error", `Search lỗi: "${value}" không phải bộ 6 số hợp lệ.`);
       return;
     }
-    const index = combinationToIndex(numbers);
+    const index = combinationToIndex(numbers, currentProduct);
     addLog("info", `Search ${formatCombination(numbers)} tại #${index.toLocaleString("en-US")}.`);
     focusCell(index);
   }
 
   function handleRandomPick() {
-    const numbers = randomCombination();
-    const index = combinationToIndex(numbers);
+    const numbers = randomCombination(currentProduct);
+    const index = combinationToIndex(numbers, currentProduct);
     setRandomIndex(index);
     addLog("success", `Random Pick: ${formatCombination(numbers)} tại #${index.toLocaleString("en-US")}.`);
     focusCell(index, Math.max(zoom, 3.6));
@@ -176,7 +190,7 @@ function App() {
       addLog("warn", "Calculated Pick cần dữ liệu import; đang dùng random fallback.");
     }
 
-    const result = calculatedPick(importedIndexes, undefined, {
+    const result = calculatedPick(importedIndexes, currentProduct, undefined, {
       diversityMemory: recentCalculatedPicks,
     });
     setRandomIndex(result.index);
@@ -202,7 +216,7 @@ function App() {
     addLog("info", `Replay Backtest comparison started: ${importedHistory.length.toLocaleString("en-US")} historical draws.`);
 
     try {
-      const results = await runReplayBacktest(importedHistory, ({ drawIndex, totalDraws, results: progressResults }) => {
+      const results = await runReplayBacktest(importedHistory, currentProduct, ({ drawIndex, totalDraws, results: progressResults }) => {
         if (drawIndex % 100 === 0) {
           const yourProgress = progressResults.find((result) => result.name === "Your Algorithm");
           addLog(
@@ -271,7 +285,7 @@ function App() {
     );
 
     try {
-      const result = await runRandomStatisticalTest(importedHistory, RANDOM_STAT_TEST_RUNS, (drawIndex, totalDraws) => {
+      const result = await runRandomStatisticalTest(importedHistory, currentProduct, RANDOM_STAT_TEST_RUNS, (drawIndex, totalDraws) => {
         if (drawIndex % 100 === 0) {
           addLog("info", `Stat Test progress: ${drawIndex}/${totalDraws} draws.`);
         }
@@ -325,10 +339,11 @@ function App() {
     <main className="app-shell">
       <header className="app-header">
         <div>
-          <p className="eyebrow">Vietlott Power 6/55</p>
+          <p className="eyebrow">Vietlott {currentProduct.label}</p>
           <h1>Combination Space Dashboard</h1>
         </div>
         <div className="header-actions">
+          <ProductSelector value={currentProductId} onChange={setCurrentProductId} />
           <SearchBox onSearch={handleSearch} />
           <button onClick={handleLogout} title="Logout">
             Logout
@@ -367,6 +382,7 @@ function App() {
       <div className="workspace">
         <section className="grid-section">
           <CombinationGrid
+            product={currentProduct}
             importedIndexes={importedIndexes}
             selectedIndexes={selectedIndexes}
             randomIndex={randomIndex}
@@ -379,7 +395,7 @@ function App() {
         </section>
 
         <aside className="side-panel">
-          <StatsPanel importedCount={importedIndexes.size} selectedCount={selected.size} />
+          <StatsPanel product={currentProduct} importedCount={importedIndexes.size} selectedCount={selected.size} />
           <LogPanel entries={logs} />
         </aside>
       </div>

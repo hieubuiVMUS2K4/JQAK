@@ -1,13 +1,14 @@
 import { MouseEvent, PointerEvent, useEffect, useMemo, useRef } from "react";
+import type { LotteryProductConfig } from "../config/products";
 import type { GridMode } from "../types";
-import { formatCombination, indexToCombination, TOTAL_COMBINATIONS } from "../utils/combinations";
+import { formatCombination, indexToCombination } from "../utils/combinations";
 
 const COLUMNS = 5_500;
-const ROWS = Math.ceil(TOTAL_COMBINATIONS / COLUMNS);
 const BASE_CELL_SIZE = 4;
 const GAP = 1;
 
 type CombinationGridProps = {
+  product: LotteryProductConfig;
   importedIndexes: Set<number>;
   selectedIndexes: Set<number>;
   randomIndex: number | null;
@@ -40,6 +41,7 @@ function isIndexVisible(index: number, startColumn: number, endColumn: number, s
 }
 
 export function CombinationGrid({
+  product,
   importedIndexes,
   selectedIndexes,
   randomIndex,
@@ -75,8 +77,9 @@ export function CombinationGrid({
 
   const cellSize = BASE_CELL_SIZE * zoom;
   const stride = cellSize + GAP;
+  const rows = Math.ceil(product.totalCombinations / COLUMNS);
   const worldWidth = COLUMNS * stride;
-  const worldHeight = ROWS * stride;
+  const worldHeight = rows * stride;
   const importedList = useMemo(() => [...importedIndexes], [importedIndexes]);
   const selectedList = useMemo(() => [...selectedIndexes], [selectedIndexes]);
 
@@ -120,7 +123,7 @@ export function CombinationGrid({
     const startColumn = Math.max(0, Math.floor(scroller.scrollLeft / state.stride));
     const endColumn = Math.min(COLUMNS - 1, Math.ceil((scroller.scrollLeft + width) / state.stride));
     const startRow = Math.max(0, Math.floor(scroller.scrollTop / state.stride));
-    const endRow = Math.min(ROWS - 1, Math.ceil((scroller.scrollTop + height) / state.stride));
+    const endRow = Math.min(rows - 1, Math.ceil((scroller.scrollTop + height) / state.stride));
     const visibleWidth = endColumn - startColumn + 1;
     const visibleHeight = endRow - startRow + 1;
     const defaultColor = state.mode === "heatmap" ? "#303338" : "#2b2b2b";
@@ -133,7 +136,7 @@ export function CombinationGrid({
       for (let column = 0; column < visibleWidth; column += 1) {
         const sourceColumn = startColumn + column;
         const index = sourceRow * COLUMNS + sourceColumn;
-        if (index >= TOTAL_COMBINATIONS) break;
+        if (index >= product.totalCombinations) break;
         ctx.fillRect(sourceColumn * state.stride - scroller.scrollLeft, y, size, size);
       }
     }
@@ -161,8 +164,8 @@ export function CombinationGrid({
         const y = row * state.stride - scroller.scrollTop;
         for (let column = startColumn; column <= endColumn; column += 1) {
           const index = row * COLUMNS + column;
-          if (index >= TOTAL_COMBINATIONS) break;
-          ctx.fillText(formatCombination(indexToCombination(index)), column * state.stride - scroller.scrollLeft + 3, y + 14);
+          if (index >= product.totalCombinations) break;
+          ctx.fillText(formatCombination(indexToCombination(index, product)), column * state.stride - scroller.scrollLeft + 3, y + 14);
         }
       }
     }
@@ -230,7 +233,7 @@ export function CombinationGrid({
       stride,
     };
     scheduleDraw();
-  }, [cellSize, importedIndexes, importedList, mode, randomIndex, selectedIndexes, selectedList, stride]);
+  }, [cellSize, importedIndexes, importedList, mode, product, randomIndex, rows, selectedIndexes, selectedList, stride]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -264,7 +267,7 @@ export function CombinationGrid({
       resizeObserver.disconnect();
       scroller.removeEventListener("scroll", scheduleDraw);
     };
-  }, []);
+  }, [product, rows]);
 
   useEffect(() => {
     const scroller = scrollerRef.current;
@@ -294,9 +297,9 @@ export function CombinationGrid({
     const worldY = event.clientY - rect.top + scroller.scrollTop;
     const column = Math.floor(worldX / stride);
     const row = Math.floor(worldY / stride);
-    if (column < 0 || column >= COLUMNS || row < 0 || row >= ROWS) return null;
+    if (column < 0 || column >= COLUMNS || row < 0 || row >= rows) return null;
     const index = row * COLUMNS + column;
-    return index >= TOTAL_COMBINATIONS ? null : index;
+    return index >= product.totalCombinations ? null : index;
   }
 
   function updateTooltip(event: PointerEvent<HTMLCanvasElement>, index: number | null) {
@@ -313,7 +316,7 @@ export function CombinationGrid({
     tooltip.hidden = false;
     tooltip.style.transform = `translate(${event.clientX + 14}px, ${event.clientY + 14}px)`;
     if (previousIndex !== index) {
-      tooltip.textContent = `#${index.toLocaleString("en-US")} - ${formatCombination(indexToCombination(index))}`;
+      tooltip.textContent = `#${index.toLocaleString("en-US")} - ${formatCombination(indexToCombination(index, product))}`;
       scheduleDraw();
     }
   }
