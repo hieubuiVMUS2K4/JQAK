@@ -28,3 +28,56 @@
 [2026-07-13T20:04:21.383Z] [INFO] user=admin id=29 app_time=03:04:21 Best replay sample from top strategy Your Algorithm at draw #878: predicted 03 23 32 38 42 45 vs actual 03 17 23 33 42 45.
 [2026-07-13T20:04:21.382Z] [INFO] user=admin id=27 app_time=03:04:21 Frequency Weighted: avg=0.776 | 3=27 | 4=3 | 5=0 | exact=0 | best=4 | ROI=-87.18% | dist [0:556 1:554 2:194 3:27 4:3 5:0 6:0].
 [2026-07-13T20:04:21.383Z] [SUCCESS] user=admin id=28 app_time=03:04:21 Your vs Random: avg delta=0.025, 3+ hits delta=14.
+[2026-07-14T14:05:55.885Z] [SUCCESS] user=admin id=1 app_time=21:05:55 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:05:55.892Z] [SUCCESS] user=admin id=2 app_time=21:05:55 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:06:38.553Z] [SUCCESS] user=admin id=3 app_time=21:06:38 Auto-loaded data/power535.jsonl for Power 5/35: 686 bộ hợp lệ.
+[2026-07-14T14:08:56.206Z] [INFO] user=admin id=4 app_time=21:08:56 Toggle Grid / Heatmap Mode.
+[2026-07-14T14:08:56.806Z] [INFO] user=admin id=5 app_time=21:08:56 Toggle Grid / Heatmap Mode.
+[2026-07-14T14:08:57.162Z] [INFO] user=admin id=6 app_time=21:08:57 Toggle Grid / Heatmap Mode.
+[2026-07-14T14:08:58.219Z] [INFO] user=admin id=7 app_time=21:08:58 Toggle Grid / Heatmap Mode.
+[2026-07-14T14:13:54.742Z] [SUCCESS] user=admin id=1 app_time=21:13:54 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:13:54.768Z] [SUCCESS] user=admin id=2 app_time=21:13:54 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:14:26.822Z] [SUCCESS] user=admin id=1 app_time=21:14:26 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:14:26.839Z] [SUCCESS] user=admin id=2 app_time=21:14:26 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:14:34.748Z] [SUCCESS] user=admin id=1 app_time=21:14:34 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:14:34.766Z] [SUCCESS] user=admin id=2 app_time=21:14:34 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:14:41.653Z] [SUCCESS] user=admin id=1 app_time=21:14:41 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:14:41.667Z] [SUCCESS] user=admin id=2 app_time=21:14:41 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:14:47.673Z] [SUCCESS] user=admin id=1 app_time=21:14:47 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:14:47.693Z] [SUCCESS] user=admin id=2 app_time=21:14:47 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:14:56.676Z] [SUCCESS] user=admin id=1 app_time=21:14:56 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:14:56.688Z] [SUCCESS] user=admin id=2 app_time=21:14:56 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:16:24.706Z] [SUCCESS] user=admin id=1 app_time=21:16:24 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:16:24.723Z] [SUCCESS] user=admin id=2 app_time=21:16:24 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:16:38.666Z] [SUCCESS] user=admin id=1 app_time=21:16:38 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:16:38.687Z] [SUCCESS] user=admin id=2 app_time=21:16:38 Auto-loaded data/power655.jsonl for Power 6/55: 1,370 bộ hợp lệ.
+[2026-07-14T14:19:35.743Z] [SUCCESS] user=admin id=3 app_time=21:19:35 Auto-loaded data/power535.jsonl for Power 5/35: 686 bộ hợp lệ.
+[2026-07-14T14:19:38.279Z] [SUCCESS] user=admin id=4 app_time=21:19:38 Random Pick: 03 18 23 25 28 tại #120,603.
+[2026-07-14T14:20:10.018Z] [INFO] user=admin id=5 app_time=21:20:10 Search 10 18 19 28 33 tại #268,538.
+[2026-07-14T14:20:23.308Z] [SUCCESS] user=admin id=6 app_time=21:20:23 Random Pick: 15 17 23 27 35 tại #305,819.
+[2026-07-14T14:20:30.907Z] [SUCCESS] user=admin id=7 app_time=21:20:30 Calculated Pick: 02 05 12 17 35 tại #57,966 | score 0.4684 | base 0.4684 | diversity penalty 0.0000 | avg number freq 88.40 | avg pair freq 8.00 | 37,583 candidates.
+[2026-07-14T14:20:38.907Z] [INFO] user=admin id=8 app_time=21:20:38 Replay Backtest comparison started: 686 historical draws.
+[2026-07-14T14:20:49.538Z] [INFO] user=admin id=9 app_time=21:20:49 Replay progress 100/685: Your avg=0.650, Random avg=0.710.
+[2026-07-14T14:21:00.493Z] [INFO] user=admin id=10 app_time=21:21:00 Replay progress 200/685: Your avg=0.630, Random avg=0.705.
+[2026-07-14T14:21:11.665Z] [INFO] user=admin id=11 app_time=21:21:11 Replay progress 300/685: Your avg=0.613, Random avg=0.713.
+[2026-07-14T14:21:22.889Z] [INFO] user=admin id=12 app_time=21:21:22 Replay progress 400/685: Your avg=0.635, Random avg=0.693.
+[2026-07-14T14:21:34.285Z] [INFO] user=admin id=13 app_time=21:21:34 Replay progress 500/685: Your avg=0.646, Random avg=0.710.
+[2026-07-14T14:21:45.871Z] [INFO] user=admin id=14 app_time=21:21:45 Replay progress 600/685: Your avg=0.658, Random avg=0.707.
+[2026-07-14T14:21:55.820Z] [SUCCESS] user=admin id=15 app_time=21:21:55 Replay Backtest done. Tested=685 draws. Baseline included. No strategy used actual draw data before picking.
+[2026-07-14T14:21:55.821Z] [INFO] user=admin id=18 app_time=21:21:55 Pair Frequency: avg=0.720 | 3=8 | 4=0 | 5=0 | 3+ total=8 | exact=0 | best=3 | ROI=-96.50% | dist [0:302 1:281 2:94 3:8 4:0 5:0].
+[2026-07-14T14:21:55.821Z] [INFO] user=admin id=19 app_time=21:21:55 Hot Numbers: avg=0.711 | 3=8 | 4=0 | 5=0 | 3+ total=8 | exact=0 | best=3 | ROI=-96.50% | dist [0:310 1:271 2:96 3:8 4:0 5:0].
+[2026-07-14T14:21:55.822Z] [INFO] user=admin id=16 app_time=21:21:55 Cold Numbers: avg=0.756 | 3=11 | 4=1 | 5=0 | 3+ total=12 | exact=0 | best=4 | ROI=-87.88% | dist [0:291 1:283 2:99 3:11 4:1 5:0].
+[2026-07-14T14:21:55.822Z] [INFO] user=admin id=20 app_time=21:21:55 Random: avg=0.702 | 3=8 | 4=0 | 5=0 | 3+ total=8 | exact=0 | best=3 | ROI=-96.50% | dist [0:302 1:293 2:82 3:8 4:0 5:0].
+[2026-07-14T14:21:55.822Z] [INFO] user=admin id=17 app_time=21:21:55 Triple Frequency: avg=0.737 | 3=9 | 4=1 | 5=0 | 3+ total=10 | exact=0 | best=4 | ROI=-88.76% | dist [0:291 1:294 2:90 3:9 4:1 5:0].
+[2026-07-14T14:21:55.823Z] [INFO] user=admin id=21 app_time=21:21:55 Delay: avg=0.699 | 3=10 | 4=0 | 5=0 | 3+ total=10 | exact=0 | best=3 | ROI=-95.62% | dist [0:308 1:285 2:82 3:10 4:0 5:0].
+[2026-07-14T14:21:55.835Z] [INFO] user=admin id=22 app_time=21:21:55 Frequency Weighted: avg=0.695 | 3=8 | 4=1 | 5=0 | 3+ total=9 | exact=0 | best=4 | ROI=-89.20% | dist [0:302 1:300 2:74 3:8 4:1 5:0].
+[2026-07-14T14:21:55.837Z] [INFO] user=admin id=25 app_time=21:21:55 Best replay sample from top strategy Cold Numbers at draw #607: predicted 05 12 16 17 31 vs actual 05 12 17 28 31.
+[2026-07-14T14:21:55.837Z] [WARN] user=admin id=24 app_time=21:21:55 Your vs Random: avg delta=-0.060, 3+ hits delta=-4.
+[2026-07-14T14:21:55.836Z] [SUCCESS] user=admin id=23 app_time=21:21:55 Your Algorithm: avg=0.642 | 3=4 | 4=0 | 5=0 | 3+ total=4 | exact=0 | best=3 | ROI=-98.25% | dist [0:326 1:282 2:73 3:4 4:0 5:0].
+[2026-07-14T14:22:15.853Z] [INFO] user=admin id=26 app_time=21:22:15 Reset View về đầu không gian tổ hợp.
+[2026-07-14T14:28:07.074Z] [SUCCESS] user=admin id=27 app_time=21:28:07 Calculated Pick: 04 09 16 21 32 tại #138,707 | score 0.4616 | base 0.4616 | diversity penalty 0.0000 | avg number freq 87.00 | avg pair freq 8.00 | 37,457 candidates.
+[2026-07-14T14:28:13.911Z] [SUCCESS] user=admin id=28 app_time=21:28:13 Calculated Pick: 01 03 18 24 31 tại #9,676 | score 0.4447 | base 0.4447 | diversity penalty 0.0000 | avg number freq 95.00 | avg pair freq 9.60 | 37,594 candidates.
+[2026-07-14T14:28:18.222Z] [SUCCESS] user=admin id=29 app_time=21:28:18 Calculated Pick: 07 08 13 30 33 tại #207,249 | score 0.4217 | base 0.4217 | diversity penalty 0.0000 | avg number freq 99.00 | avg pair freq 10.10 | 37,506 candidates.
+[2026-07-14T14:49:07.867Z] [SUCCESS] user=admin id=30 app_time=21:49:07 Random Pick: 12 14 19 20 32 tại #284,329.
+[2026-07-14T14:49:13.880Z] [SUCCESS] user=admin id=31 app_time=21:49:13 Calculated Pick: 01 06 13 16 35 tại #20,913 | score 0.4115 | base 0.4475 | diversity penalty 0.0360 | avg number freq 93.60 | avg pair freq 9.70 | 37,535 candidates.
+[2026-07-14T14:49:15.871Z] [SUCCESS] user=admin id=32 app_time=21:49:15 Random Pick: 13 24 25 27 29 tại #297,813.

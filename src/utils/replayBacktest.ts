@@ -78,6 +78,14 @@ export const REPLAY_STRATEGIES: ReplayStrategyName[] = [
   "Your Algorithm",
 ];
 
+const REPLAY_DIVERSITY_MEMORY_SIZE = 18;
+
+function replayCandidateCount(config: LotteryProductConfig) {
+  if (config.id === "power535") return 20_000;
+  if (config.id === "power645") return 8_000;
+  return 5_000;
+}
+
 function key2(a: number, b: number) {
   return a < b ? `${a}:${b}` : `${b}:${a}`;
 }
@@ -174,6 +182,7 @@ function pickForStrategy(
   history: ImportedCombination[],
   historyIndexes: Set<number>,
   config: LotteryProductConfig,
+  diversityMemory: number[][] = [],
 ): number[] {
   if (history.length === 0 || name === "Random") return randomCombination(config);
 
@@ -217,7 +226,10 @@ function pickForStrategy(
     });
   }
 
-  return calculatedPick(historyIndexes, config, 5_000).numbers;
+  return calculatedPick(historyIndexes, config, replayCandidateCount(config), {
+    diversityMemory,
+    diversityPenaltyWeight: config.id === "power535" ? 0.28 : 0.18,
+  }).numbers;
 }
 
 function mean(values: number[]) {
@@ -256,12 +268,13 @@ export async function runReplayBacktest(
   );
   const trainingHistory: ImportedCombination[] = [history[0]];
   const trainingIndexes = new Set<number>([history[0].index]);
+  let yourAlgorithmMemory: number[][] = [];
 
   for (let drawIndex = 1; drawIndex < history.length; drawIndex += 1) {
     const actual = history[drawIndex];
 
     for (const strategyName of REPLAY_STRATEGIES) {
-      const picked = pickForStrategy(strategyName, trainingHistory, trainingIndexes, config);
+      const picked = pickForStrategy(strategyName, trainingHistory, trainingIndexes, config, strategyName === "Your Algorithm" ? yourAlgorithmMemory : []);
       const pickedIndex = combinationToIndex(picked, config);
       const matches = picked.filter((number) => actual.numbers.includes(number)).length;
       const result = results.get(strategyName)!;
@@ -278,6 +291,10 @@ export async function runReplayBacktest(
           actual: actual.numbers,
           drawIndex,
         };
+      }
+
+      if (strategyName === "Your Algorithm") {
+        yourAlgorithmMemory = [picked, ...yourAlgorithmMemory].slice(0, REPLAY_DIVERSITY_MEMORY_SIZE);
       }
     }
 
@@ -296,11 +313,13 @@ export async function runReplayBacktest(
 export function summarizeReplayResult(result: ReplayStrategyResult, testedDraws: number) {
   const totalCost = testedDraws * 10_000;
   const profit = result.totalRevenue - totalCost;
+  const hits3Plus = result.distribution.reduce((sum, count, matches) => sum + (matches >= 3 ? count : 0), 0);
   return {
     avgMatches: result.totalMatches / testedDraws,
     hits3: result.distribution[3],
     hits4: result.distribution[4],
     hits5: result.distribution[5],
+    hits3Plus,
     exactHits: result.exactHits,
     roi: totalCost > 0 ? (profit / totalCost) * 100 : 0,
   };
@@ -316,6 +335,7 @@ export async function runRandomStatisticalTest(
   const totalCost = testedDraws * 10_000;
   const trainingHistory: ImportedCombination[] = [history[0]];
   const trainingIndexes = new Set<number>([history[0].index]);
+  let yourAlgorithmMemory: number[][] = [];
   const yourDistribution = Array.from({ length: config.pickCount + 1 }, () => 0);
   const randomTotalMatches = Array.from({ length: randomRuns }, () => 0);
   const randomHits3Plus = Array.from({ length: randomRuns }, () => 0);
@@ -326,12 +346,13 @@ export async function runRandomStatisticalTest(
 
   for (let drawIndex = 1; drawIndex < history.length; drawIndex += 1) {
     const actual = history[drawIndex];
-    const yourPick = pickForStrategy("Your Algorithm", trainingHistory, trainingIndexes, config);
+    const yourPick = pickForStrategy("Your Algorithm", trainingHistory, trainingIndexes, config, yourAlgorithmMemory);
     const yourEval = evaluatePick(yourPick, actual.numbers, config);
     yourDistribution[yourEval.matches] += 1;
     yourTotalMatches += yourEval.matches;
     yourRevenue += yourEval.revenue;
     if (yourEval.matches >= 3) yourHits3Plus += 1;
+    yourAlgorithmMemory = [yourPick, ...yourAlgorithmMemory].slice(0, REPLAY_DIVERSITY_MEMORY_SIZE);
 
     for (let run = 0; run < randomRuns; run += 1) {
       const randomEval = evaluatePick(randomCombination(config), actual.numbers, config);

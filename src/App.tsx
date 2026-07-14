@@ -51,6 +51,17 @@ function downloadCsv(fileName: string, rows: string[]) {
   URL.revokeObjectURL(url);
 }
 
+function selectedCsvHeader(pickCount: number) {
+  const numberColumns = Array.from({ length: pickCount }, (_, index) => `n${index + 1}`);
+  return ["index", ...numberColumns, "selected_at"].join(",");
+}
+
+function replayHitSummary(distribution: number[], pickCount: number) {
+  return Array.from({ length: Math.max(0, pickCount - 2) }, (_, offset) => offset + 3)
+    .map((matches) => `${matches}=${distribution[matches] ?? 0}`)
+    .join(" | ");
+}
+
 function persistLog(entry: LogEntry & { user: string }) {
   fetch(LOG_SERVER_URL, {
     method: "POST",
@@ -239,7 +250,7 @@ function App() {
         const summary = summarizeReplayResult(result, testedDraws);
         addLog(
           result.name === "Your Algorithm" ? "success" : "info",
-          `${result.name}: avg=${summary.avgMatches.toFixed(3)} | 3=${summary.hits3 ?? 0} | 4=${summary.hits4 ?? 0} | 5=${summary.hits5 ?? 0} | exact=${summary.exactHits} | best=${result.bestMatch} | ROI=${summary.roi.toFixed(2)}% | dist [${result.distribution.map((count, matches) => `${matches}:${count}`).join(" ")}].`,
+          `${result.name}: avg=${summary.avgMatches.toFixed(3)} | ${replayHitSummary(result.distribution, currentProduct.pickCount)} | 3+ total=${summary.hits3Plus} | exact=${summary.exactHits} | best=${result.bestMatch} | ROI=${summary.roi.toFixed(2)}% | dist [${result.distribution.map((count, matches) => `${matches}:${count}`).join(" ")}].`,
         );
       }
 
@@ -250,7 +261,7 @@ function App() {
         const randomSummary = summarizeReplayResult(randomResult, testedDraws);
         addLog(
           yourSummary.avgMatches > randomSummary.avgMatches ? "success" : "warn",
-          `Your vs Random: avg delta=${(yourSummary.avgMatches - randomSummary.avgMatches).toFixed(3)}, 3+ hits delta=${((yourSummary.hits3 ?? 0) + (yourSummary.hits4 ?? 0) + (yourSummary.hits5 ?? 0) + yourSummary.exactHits) - ((randomSummary.hits3 ?? 0) + (randomSummary.hits4 ?? 0) + (randomSummary.hits5 ?? 0) + randomSummary.exactHits)}.`,
+          `Your vs Random: avg delta=${(yourSummary.avgMatches - randomSummary.avgMatches).toFixed(3)}, 3+ hits delta=${yourSummary.hits3Plus - randomSummary.hits3Plus}.`,
         );
       }
 
@@ -319,11 +330,11 @@ function App() {
       return;
     }
 
-    const rows = ["index,n1,n2,n3,n4,n5,n6,selected_at"];
+    const rows = [selectedCsvHeader(currentProduct.pickCount)];
     [...selected.values()]
       .sort((a, b) => a.index - b.index)
       .forEach((item) => rows.push([item.index, ...item.numbers, item.selectedAt].join(",")));
-    downloadCsv("selected-power655-combinations.csv", rows);
+    downloadCsv(`selected-${currentProduct.id}-combinations.csv`, rows);
     addLog("success", `Export Selected Cells: ${selected.size.toLocaleString("en-US")} dòng CSV.`);
   }
 
